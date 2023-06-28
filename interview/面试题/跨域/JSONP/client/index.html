@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.1/jquery.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <button id="btn">获取数据</button>
+    <script>
+       const jsonp=(url,params,cb)=>{
+        return new Promise((resolve,reject)=>{
+            // 在js里面创建一个h5标签
+            const script =document.createElement('script')
+
+
+            params={...params,cb:cb}
+            const arr = Object.keys(params).map(key => `${key}=${params[key]}`)  // Object.keys 打印出某个对象里面的键值
+            script.src=`${url}?${arr.join('&')}`   // 这个地址要被添加到页面的html里面浏览器才能加载
+            document.body.
+            appendChild(script)  // 将这个script标签添加到body体里面
+
+            // 加载到了资源要往外抛 
+            // 后端会返回一个函数给前端
+            // 在window上声明的一个函数，需要后端返回的东西触发它
+            window[cb]=(data)=>{  // data 就是script标签src属性加载的资源
+                resolve(data)
+            }
+        }) 
+       }
+
+       let btn =document.getElementById('btn')
+       btn.addEventListener('click',()=>{
+        jsonp('http://localhost:3000',{name:'bruce',age:18,},'callback')
+        .then(res=>{
+            console.log(res);
+        })
+       })
+    </script>
+</body>
+</html>

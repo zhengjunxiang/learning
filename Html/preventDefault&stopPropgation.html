@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+    <div id="root">
+        <div id="div">div标签
+            <!-- <a href="" id="a">a标签</a> -->
+            <div id="a">a标签</div>
+        </div>
+    </div>
+  <script>
+    var outerElement = document.getElementById('root');
+    var middleElement = document.getElementById('div');
+    var innerElement = document.getElementById('a');
+
+    outerElement.addEventListener('click', function (event) {
+        console.log('trigger outermost div');
+    });
+    middleElement.addEventListener('click', function () {
+        console.log('trigger middle div');
+    });
+    innerElement.addEventListener('click', function (event) {
+        event.preventDefault(); // 如果没有这个的话 会触发a标签的默认行为就是刷新链接
+        // event.stopPropagation(); // 这个是阻止向上冒泡
+        console.log('trigger innermost button');
+    });
+
+  </script>
+  <style>
+      #root {
+          height: 200px;
+          width: 200px;
+          border: 1px solid #f00
+      }
+      #div {
+          height: 100px;
+          width: 100px;
+          border: 1px solid #f00
+      }
+  </style>
+</body>
+</html>

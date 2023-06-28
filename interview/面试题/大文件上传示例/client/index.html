@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <title>Document</title>
+</head>
+
+<body>
+  <input type="file" id="input">
+  <button id="upload">上传</button>
+
+  <div style="width: 300px" id="progress">
+
+  </div>
+
+
+  <script>
+    let input = document.getElementById('input')
+    let upload = document.getElementById('upload')
+
+    let chunkList = []
+    let files = {}
+
+    input.addEventListener('change', (e) => {
+      files = e.target.files[0]
+      console.log(files);
+      chunkList = createChunk(files)
+      console.log(chunkList);
+    })
+
+    // 上传
+    upload.addEventListener('click', () => {
+      const uploadList = chunkList.map(({ file }, index) => ({
+        file,
+        size: file.size,
+        percent: 0,
+        chunkName: `${files.name}-${index}`,
+        fileName: files.name,
+        index
+      }))
+
+      uploadFile(uploadList)
+
+    })
+
+
+   async function uploadFile(list) {
+      const requestList = list.map(({ file, fileName, index, chunkName }) => {
+        const formData = new FormData() // 创建表单类型数据
+        formData.append('file', file)
+        formData.append('fileName', fileName)
+        formData.append('chunkName', chunkName)
+        return { formData, index }
+      })
+        .map(({ formData, index }) => 
+          axiosRequest({
+            method: 'post',
+            url: 'http://localhost:3000/upload',
+            data: formData,
+            onUploadProgress: createProgressHandler(chunkList[index])
+          }).then(res => {
+            console.log(res);
+
+            let p = document.createElement('p')
+            p.innerHTML = `${list[index].chunkName}--${res.data.message}`
+            document.getElementById('progress').appendChild(p)
+          })
+        )
+      
+		await Promise.all(requestList)
+		merge(files.size,files.name)
+	}
+
+	// 通知后端去做切片合并
+	function merge(size,fileName){
+		axiosRequest({
+			method:'post',
+			url:'http://localhost:3000/merge',
+			data:JSON.stringify({
+				size,
+				fileName
+			})
+		})
+	}
+
+    function createProgressHandler(item) {
+      return function(e) {
+        console.log(e);
+      }
+    }
+
+    function axiosRequest({ method = "post", url, data, onUploadProgress = (e) => e }) {
+      return new Promise((resolve, reject) => {
+        const config = {
+          headers: 'Content-Type:application/x-www-form-urlencoded',
+        }
+        axios[method](
+          url, 
+          data,
+          config
+        ).then((res) => {
+          resolve(res)
+        })
+        // const xhr = new XMLHttpRequest()
+        // xhr.open(method, url)
+        // Object.keys(headers).forEach(key => {
+        //   xhr.setRequestHeader(key, headers[key])
+        // })
+        // xhr.send(data)
+        // xhr.onload = e => {
+        //   resolve({
+        //     data: e.target.response
+        //   })
+        // }
+      })
+    }
+
+    function createChunk(file, size = 2 * 1024 * 1024) {
+      const chunkList = []
+      let cur = 0
+      while (cur < file.size) {
+        chunkList.push({ file: file.slice(cur, cur + size) })
+        cur += size
+      }
+      return chunkList
+    }
+  </script>
+</body>
+
+</html>

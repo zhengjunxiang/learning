@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- 实现九宫格 https://juejin.cn/post/7016495512002134024 -->
+  <style>
+    ul {
+      padding: 0;
+    }
+
+    li { 
+      list-style: none;
+      text-align: center;
+      border-radius: 5px;
+      background: skyblue;
+    }
+    /* .flex {   弊端盒子里不能写文字
+        width: 200px;
+        height: 200px;            
+        display: flex;            
+        justify-content: space-around;            
+        flex-wrap: wrap;    
+    }        
+    .item {            
+        width: 30%;            
+        border: 1px solid #ccc;            
+        box-sizing: border-box;            
+        padding-top: 30%;            
+        height: 30%;            
+        margin-top: 3%;   
+    } */
+    /* ul {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: 30% 30% 30%; 
+      grid-template-rows: 30% 30% 30%; 
+      grid-gap: 5%; 
+    } */
+    html {
+      width: 100%;
+      height: 100%;
+    }
+    body {
+      width: 100%;
+      height: 100%;
+    }
+    ul {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+      height: 100%;
+    }
+
+    .item {
+      width: 30%;
+      height: 30%;
+      margin-right: 5%;
+      margin-bottom: 5%;
+    }
+
+    li:nth-of-type(3n){ 
+      margin-right: 0;
+    }
+
+    li:nth-of-type(3n){ 
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+
+<ul class="flex">        
+    <li class="item">vdsbgdfbhfdhdfahgder</li>        
+    <li class="item"></li>        
+    <li class="item"></li>        
+    <li class="item"></li>        
+    <li class="item"></li>        
+    <li class="item"></li>        
+    <li class="item"></li>        
+    <li class="item"></li>        
+    <li class="item"></li>    
+</ul>
+</body>
+</html>

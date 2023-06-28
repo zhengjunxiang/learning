@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        .child2 {}
+    </style>
+</head>
+
+<body>
+    <div id="app"></div>
+    <!-- 执行下面的代码，浏览器发生了几次重排，几次重绘  一次重排，一次重绘-->
+    <script>
+        let el = document.getElementById('app')
+        el.style.width = (el.offsetWidth + 1) + 'px'
+        el.style.width = 1 + 'px'
+
+        // 重排
+        // 第一次 el.offsetWidth 计算容器宽度触发浏览器重排
+        // 第二次 el.offsetWidth + 1
+        // 第三次 el.style.width = 1 + 'px'
+
+        // 重绘
+
+    </script>
+
+</body>
+
+</html>
