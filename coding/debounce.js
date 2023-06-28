@@ -1,25 +1,43 @@
 // https://juejin.cn/post/6844903669389885453#heading-4
 // 防抖是在一段时间内 只执行最后一次，如果这段时间内多次触发，定时器重新计算时间
-
 // 防抖：是指在事件被触发 n 秒后再执行回调，如果在这 n 秒内事件又被触发，则重新计时。这可以用在键盘输入上，等用户输入完成时自动进行字符串校验等
 // 节流：是指规定一个单位时间，在这个单位时间内，只能有一次触发事件的回调函数执行，如果在同一个单位时间内某事件被触发多次，只有一次能生效。节流可以使用在 scroll 函数的事件监听上，通过事件节流来降低事件调用的频率。
-
 function debounce (func, wait = 50) {
     let timer = 0
-     return function (...args) {
-         if(timer) clearTimeout(timer)
-         timer = setTimeout(()=>{
+    return function (...args) {
+        if(timer) clearTimeout(timer)
+        timer = setTimeout(() => {
             func.apply(this, args)
             clearTimeout(timer)
-         }, wait)
-     }
- }
+        }, wait)
+    }
+}
+
+function throttle (func, wait = 50) {
+    let last = new Date()
+    return function (...args) {
+        let now = +new Date()
+        if(now - last > wait) {
+            last = now
+            func.apply(this, args)
+        }
+    }
+}
+
+function throttle (func, wait = 50) {
+    let last = new Date()
+    return function (...args) {
+        let now = +new Date()
+        if (now - last > wait) {
+            last = now
+            func.apply(this, args)
+        }
+    }
+}
 
 //  debounce函数封装后，返回内部函数
 //  每一次事件被触发，都会清除当前的timer然后重新设置超时并调用。这会导致每一次高频事件都会取消前一次的超时调用，导致事件处理程序不能被触发
 //  只有当高频事件停止，最后一次事件触发的超时调用才能在delay时间后执行
- 
-   
 let biu = function () {
     console.log('biu biu biu',new Date())
 }

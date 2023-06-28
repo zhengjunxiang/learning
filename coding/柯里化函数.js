@@ -4,21 +4,21 @@
 
 // 分批传入参数
 // redux 源码的compose也是用了类似柯里化的操作
-const curry = (fn, arr = []) => {// arr就是我们要收集每次调用时传入的参数
-  let len = fn.length; // 函数的长度，就是参数的个数
+// const curry = (fn, arr = []) => {// arr就是我们要收集每次调用时传入的参数
+//   let len = fn.length; // 函数的长度，就是参数的个数
 
-  return function(...args) {
-    let newArgs = [...arr, ...args] // 收集每次传入的参数
+//   return function(...args) {
+//     let newArgs = [...arr, ...args] // 收集每次传入的参数
 
-    // 如果传入的参数个数等于我们指定的函数参数个数，就执行指定的真正函数
-    if(newArgs.length === len) {
-      return fn(...newArgs)
-    } else {
-      // 递归收集参数
-      return curry(fn, newArgs)
-    }
-  }
-}
+//     // 如果传入的参数个数等于我们指定的函数参数个数，就执行指定的真正函数
+//     if(newArgs.length === len) {
+//       return fn(...newArgs)
+//     } else {
+//       // 递归收集参数
+//       return curry(fn, newArgs)
+//     }
+//   }
+// }
 
 function curry1(fn, ...args1) {
   const len = fn.length;
@@ -40,9 +40,15 @@ function curry1(fn, ...args1) {
 //             fn(...args) :
 //             (...args1) => curry1(...args, ...args1)
 
+const curry = fn =>
+  curry1 = (...args) =>
+    args.length >= fn.length ?
+      fn(...args) :
+      (...args1) => curry1(...args, ...args1)
+
 function addNum(a,b,c,d) {
   return a + b + c + d
 }
 
-const res = curry1(addNum)(1)(2)(3,4)
+const res = curry(addNum)(1)(2)(3,4)
 console.log('res', res)

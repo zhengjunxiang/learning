@@ -41,11 +41,10 @@ function compose(...funcs) {
   return funcs.reduce((a, b) => (...args) => a(b(...args)))
 }
 
-// pipe
-function pipe(...funcs) {
+function compose(...funcs) {
   if (funcs.length === 0) return (...args) => [...args]
   if (funcs.length === 1) return (...args) => funcs[0].apply(null, args)
-  return funcs.reduce((a, b) => (...args) => b(a(...args)))
+  return funcs.reduce((a, b) => (...args) => a(b(...args)))
 }
 
   /** 数字加一 */
@@ -69,7 +68,7 @@ function divThree (num) {
 }
 
 // 组成新的函数s
-const compose1 =  compose(divThree, addOne, subTen, double)
+const compose1 = compose(divThree, addOne, subTen, double)
 // 执行新的函数
 console.log('compose1 result:', compose1(9))
 // compose1 result: 3
