@@ -20,6 +20,24 @@ function apply(context,args){
     return fn
 }
 
+Function.prototype.myApply = function (context, argsArray) {
+    context = context || window;
+    const symbolFn = Symbol();
+    context[symbolFn] = this;
+    const result = context[symbolFn](...argsArray);
+    delete context[symbolFn];
+    return result;
+};
+
+Function.prototype.myApply = function(context, args) {
+    context = context || window;
+    const symbol = Symbol();
+    context[symbol] = this;
+    const result = context[symbol](...args)
+    delete context[symbol]
+    return result
+}
+
 Function.prototype.myBind = function (ctx, ...args) {
     // this是正在执行的函数
     const fn = this

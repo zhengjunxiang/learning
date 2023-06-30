@@ -1,3 +1,4 @@
+// 返回最快的，不管对错
 function promiseRace(arr) {
     return new Promise((resolve, reject) => {
         for(const item of arr){

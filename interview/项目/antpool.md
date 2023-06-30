@@ -35,7 +35,6 @@ server 端以 commonjs 规范进行打包
 分为 entry-client 和 entry-server，分别对应不同的执行环境，在 main.js 中提供 createApp 方法 Vue App，路由文件导出 createRouter 提供 router实例
 
 
-
 **响应式布局：**
 
 css 媒体查询 + rem 的方式：
