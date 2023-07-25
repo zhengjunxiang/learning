@@ -1,13 +1,8 @@
-> https://juejin.cn/post/7239244337539219514
->
 > 作者：2712
 > 链接：https://juejin.cn/post/7239244337539219514
 > 来源：稀土掘金
 
-
-
 在现代的Web应用程序中，异步加载已经成为了一种常见的技术手段。在React中，我们通常使用 `React.lazy()`和 `<Suspense>`组件来实现异步加载。本文将介绍React Suspense的基本概念和用法，并通过示例代码演示如何使用React Suspense来优雅地处理异步加载。
-
 
 ## 什么是React Suspense？
 
@@ -35,7 +30,6 @@ function App() {
 export default App;
 
 ```
-
 
 在上面的代码中，我们使用 `lazy()`函数来异步加载 `./LazyComponent`组件，然后使用 `<Suspense>`组件来包裹 `<LazyComponent>`组件，并在 `fallback`属性中指定一个加载中的组件。当 `./LazyComponent`组件加载完成后，它会被渲染到页面上。
 
@@ -69,7 +63,6 @@ function App() {
 export default App;
 
 ```
-
 
 在上面的代码中，我们使用两个 `<Suspense>`组件来包裹两个异步加载的组件，从而实现了多个异步加载。
 
@@ -123,7 +116,6 @@ export default App;
 ```
 
 在上面的代码中，我们定义了一个 `<ErrorBoundary>`组件来捕获错误，并在 `render()`方法中根据 `hasError`状态来渲染错误组件或子组件。在 `<Suspense>`组件中使用 `<ErrorBoundary>`组件，可以捕获异步加载出现的错误。
-
 
 ### 3. 预加载
 

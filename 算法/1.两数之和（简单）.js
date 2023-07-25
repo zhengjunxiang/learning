@@ -16,6 +16,18 @@ var twoSum = function(nums, target) {
     return null
 };
 
+function twoSum(nums, target) {
+    for (let i = 0; i < nums.length; i++) {
+        var res = target - nums[i]
+        var searched = nums.indexOf(res)
+        if (search !== -1) {
+            return [i, searched]
+        }
+    }
+
+    return null
+}
+
 // 2.用双指针
 var twoSum = function(nums, target) {
     var length=nums.length;

@@ -1,10 +1,11 @@
 
+// 所用正确才返回
 const promises = [
     Promise.resolve('ERROR A'),
     Promise.resolve('ERROR B'),
-    Promise.resolve('result'),
+    Promise.reject('result'),
   ]
-  promiseAll(promises).then((value) => {
+  Promise.all(promises).then((value) => {
     console.log('value: ', value)
   }).catch((err) => {
     console.log('err: ', err)

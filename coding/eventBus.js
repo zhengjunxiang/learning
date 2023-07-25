@@ -1,12 +1,4 @@
 class EventBus {
-    // 定义所有事件列表,此时需要修改格式：
-    // // {
-    //   key: {
-    //     D+id: Function,
-    //     id: Function
-    //   },
-    //   key: Object,
-    // } 
     // Array存储的是注册的回调函数
     constructor() {
       this.eventObj = {}; // 用于存储所有订阅事件
@@ -38,7 +30,6 @@ class EventBus {
     }
     // 取消订阅函数，类似于$off('key1', id)
     $off(name, id) {
-      console.log(this.eventObj)
       // 删除存储在事件列表中的该事件
       delete this.eventObj[name][id];
       console.info(`${id}id事件已被取消订阅`)
@@ -59,6 +50,48 @@ class EventBus {
       return id; // 将id返回出去，可以利用该id取消订阅
     }
   }
+
+class EventBus {
+  constructor() {
+    this.eventObj = {}
+    this.callbackId = 0
+  }
+
+  $on(name, callback) {
+    if (!this.eventObj[name]) {
+      this.eventObj[name] = {}
+    }
+    const id = this.callbackId++
+    this.eventObj[name][id] = callback
+    return id
+  }
+
+  $emit(name, ...args) {
+    const eventList = this.eventObj[name]
+    for (let id in eventList) {
+      eventList[id](...args)
+      if (id[0] === 'D') {
+        delete eventList[id]
+      }
+    }
+  }
+
+  $off(name, id) {
+    delete this.eventObj[name][id];
+    if (this.eventObj[name].length === 0) {
+      delete this.eventObj[name]
+    }
+  }
+
+  $once(name, callback) {
+    if (!this.eventObj[name]) {
+      this.eventObj[name] = {}
+    }
+    const id = 'D' + this.callbackId++
+    this.eventObj[name][id] = callback
+    return id
+  }
+}
   // 初始化EventBus
   let EB = new EventBus();
 

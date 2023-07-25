@@ -1,8 +1,8 @@
 // 输入：s = "(1+(2*3)+((8)/4))+1"
 // 输出：3
 // 解释：数字 8 在嵌套的 3 层括号中。
-// 示例 2：
 
+// 示例 2：
 // 输入：s = "(1)+((2))+(((3)))"
 // 输出：3
 
@@ -17,7 +17,8 @@ var maxDepth = function(s) {
          if(s[i] === ')') {
              depth--
          }
-        console.log('maxDepth', maxDepth)
     }
     return maxDepth
  };
+
+console.log('maxDepth("(1)+((2))+(((3)))")',  maxDepth("(1)+((2))+(((3)))"))

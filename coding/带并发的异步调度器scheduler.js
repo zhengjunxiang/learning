@@ -1,6 +1,5 @@
 // JS 实现一个带并发限制的异度调度器 Scheduler，保证同时运行的任务最多有两个。
 // 完善下面代码中的 Scheduler 类，使得以下程序能正确输出。
-
 class Scheduler {
   constructor() {
     this.waitTasks = []; // 待执行的任务队列
@@ -23,6 +22,34 @@ class Scheduler {
       this.excutingTasks.splice(index, 1);
       if (this.waitTasks.length > 0) {
         this.run(this.waitTasks.shift());
+      }
+    })
+  }
+}
+
+class Scheduler {
+  constructor() {
+    this.waitTasks = []
+    this.excutingTasks = []
+    this.maxExcutingNum = 2
+  }
+
+  add(promiseMaker) {
+    if (this.excutingTasks.length < this.maxExcutingNum) {
+      this.run(promiseMaker)
+    } else {
+      this.waitTasks.push(promiseMaker)
+    }
+  }
+
+
+  run(promiseMaker) {
+    const len = this.excutingTasks.push(promiseMaker)
+    const index = len - 1
+    promiseMaker().finally(() => {
+      this.excutingTasks.splice(index, 1)
+      if (this.waitTasks.length > 0) {
+        this.run(this.waitTasks.shift())
       }
     })
   }

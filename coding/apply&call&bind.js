@@ -1,6 +1,5 @@
 // # call
-// 第一个为函数上下文也就是this，后边参数为函数本身的参数
-// 立即执行
+// 立即执行 第一个为函数上下文也就是this，后边参数为函数本身的参数
 function myCall(context, ...args) {
     context = context || window
     const symbolFn = new Symbol()
@@ -11,10 +10,7 @@ function myCall(context, ...args) {
 }
 
 // apply
-// apply接收两个参数，第一个参数为函数上下文this，第二个参数为函数参数只不过是通过一个数组的形式传入的
-// 立即执行
-
-
+// 立即执行 接收两个参数，第一个参数为函数上下文this，第二个参数为函数参数只不过是通过一个数组的形式传入的
 function apply(context,args){
     context = context || window
     const symbolFn = Symbol()
@@ -22,6 +18,39 @@ function apply(context,args){
     const fn = context[symbolFn](...args)
     delete context[symbolFn]
     return fn
+}
+
+Function.prototype.myApply = function (context, argsArray) {
+    context = context || window;
+    const symbolFn = Symbol();
+    context[symbolFn] = this;
+    const result = context[symbolFn](...argsArray);
+    delete context[symbolFn];
+    return result;
+};
+
+Function.prototype.myApply = function(context, args) {
+    context = context || window;
+    const symbol = Symbol();
+    context[symbol] = this;
+    const result = context[symbol](...args)
+    delete context[symbol]
+    return result
+}
+
+Function.prototype.myBind = function (ctx, ...args) {
+    // this是正在执行的函数
+    const fn = this
+    // 保证 ctx[key] 的唯一性，避免和用户设置的 context[key] 冲突
+    const key = Symbol()
+    // 将执行函数设置到指定的上下文对象上
+    ctx[key] = fn
+    // 返回一个可执行函数
+    // bind 方法支持预设一部分参数，剩下的参数通过返回的函数设置，具有柯里化的作用
+    return function(...otherArgs) {
+        // 执行函数
+        return ctx[key](...args, ...otherArgs)
+    }
 }
 
 // # bind
@@ -40,23 +69,6 @@ function bind(context, ...outerArgs) {
         let result = context[symbolfn](...outerArgs, ...innerArgs)
         delete context[symbolfn]
         return result
-    }
-}
-
-Function.prototype.myBind = function (ctx, ...args) {
-    // fn.myBind(ctx, [arg1, arg2])
-
-    // this是正在执行的函数
-    const fn = this
-    // 保证 ctx[key] 的唯一性，避免和用户设置的 context[key] 冲突
-    const key = Symbol()
-    // 将执行函数设置到指定的上下文对象上
-    ctx[key] = fn
-    // 返回一个可执行函数
-    // bind 方法支持预设一部分参数，剩下的参数通过返回的函数设置，具有柯里化的作用
-    return function(...otherArgs) {
-        // 执行函数
-        return ctx[key](...args, ...otherArgs)
     }
 }
 

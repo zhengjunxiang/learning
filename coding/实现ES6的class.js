@@ -18,7 +18,32 @@ Child.prototype.sayAge = function () {
   console.log(this.age)
 }
 
+// // 测试
+// const child = new Child(20, 'poetry')
+// child.sayName()
+// child.sayAge()
+
+function Parent(name) {
+  this.name = name
+}
+
+Parent.prototype.sayName = function() {
+  console.log(this.name)
+}
+
+function Child(age, name) {
+  Parent.call(this, name)
+  this.age = age
+}
+
+Child.prototype = Object.create(Parent.prototype)
+Child.prototype.constructor = Child
+
+Child.prototype.sayAge = function() {
+  console.log(this.age)
+}
+
 // 测试
-const child = new Child(20, 'poetry')
+const child = new Child(30, 'poetry11')
 child.sayName()
 child.sayAge()
