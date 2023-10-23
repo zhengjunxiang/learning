@@ -5,7 +5,6 @@
 
 # 前言
 
-.
 在 2021 年 6 月份，[React 18 Working Group（React 18 工作组，简称 reactwg）](https://link.juejin.cn?target=https%3A%2F%2Fgithub.com%2Freactwg%2Freact-18 "https://github.com/reactwg/react-18")成立了，并且公布了 v18 版本的发布计划，经过将近一年的迭代和准备，在 2022 年 3 月 29 日，React 18 正式版终于发布了。
 
 可以在官网看到，`react 17` 的发布时间是 `2020 年 10 月 20 号`，距离 `React 18` 发布足足间隔一年半，并且v17中只有三个小版本，分别是 `17.0.0`、`17.0.1`、`17.0.2`：
@@ -24,7 +23,6 @@
 
 ```js
 React 18 中引入的新特性是使用现代浏览器的特性构建的，在IE中无法充分polyfill，比如micro-tasks
-
 ```
 
 # 升级
@@ -194,7 +192,7 @@ export default App;
 
 点击button，打印console.log：
 
-![动画2.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5a02ccce9b0a4b9e9170483617cdb087~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?)
+![1697007805541](image/React18新特性解读&完整版升级指南/1697007805541.png)
 
 可以看到，渲染次数和更新次数是一样的，即使我们更新了两个状态，每次更新组件也只渲染一次。
 
@@ -232,7 +230,7 @@ export default App;
 
 点击button，重新打印console.log：
 
-![动画3.gif](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a362eae3da414d17ad5ca9f6f3291235~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?)
+![1697007862656](image/React18新特性解读&完整版升级指南/1697007862656.png)
 
 可以看到，每次点击更新两个状态，组件都会渲染两次，不会进行批量更新。
 
@@ -267,7 +265,7 @@ export default App;
 
 点击button，重新打印console.log：
 
-![动画3.gif](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d144ac4babe84647907c6f44f19b2fbf~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?)
+![1697007912189](image/React18新特性解读&完整版升级指南/1697007912189.png)
 
 可以看到，在原生js事件中，结果跟情况二是一样的，每次点击更新两个状态，组件都会渲染两次，不会进行批量更新。
 
@@ -349,7 +347,7 @@ export default App;
 
 我们在开发时，偶尔会遇到以下错误：
 
-![QQ截图20220503200708.jpg](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3e7dad5b76814a2695470dd6f9bfd537~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?)
+![1697008041772](image/React18新特性解读&完整版升级指南/1697008041772.png)
 
 这个错误表示：**无法对未挂载（已卸载）的组件执行状态更新。这是一个无效操作，并且表明我们的代码中存在内存泄漏。**
 
@@ -361,7 +359,7 @@ export default App;
 
 关于这点，React 官方也有解释：
 
-![222.jpg](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/239c3c2b15854e54996a8022bf1cfe31~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?)
+![1697008216576](image/React18新特性解读&完整版升级指南/1697008216576.png)
 
 综上所述原因，在 `React 18` 中，官方删除了这个报错。
 
@@ -382,7 +380,7 @@ export default App;
 
 为了解决社区对这个问题的困惑，在 `React 18` 中，官方取消了这个限制。如果你安装了 `React DevTools`，第二次渲染的日志信息将显示为灰色，以柔和的方式显式在控制台。
 
-![QQ截图20220503205553.jpg](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e7c1a0da9d824e2ba2ef7b9af32fbc91~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?)
+![1697008332094](image/React18新特性解读&完整版升级指南/1697008332094.png)
 
 关于 Strict Mode 的官方解释： [github.com/reactwg/rea…](https://link.juejin.cn?target=https%3A%2F%2Fgithub.com%2Freactwg%2Freact-18%2Fdiscussions%2F96 "https://github.com/reactwg/react-18/discussions/96")
 
@@ -442,7 +440,6 @@ export default App;
 
 ```js
 const id = useId();
-
 ```
 
 支持同一个组件在客户端和服务端生成相同的唯一的 ID，避免 `hydration` 的不兼容，这解决了在 `React 17` 及 `17` 以下版本中已经存在的问题。因为我们的服务器渲染时提供的 `HTML` 是 `无序的`，`useId` 的原理就是每个 `id` 代表该组件在组件树中的层级结构。
@@ -532,6 +529,8 @@ NO！ 在 `React 17` 中一些实验性功能里面，开启 `并发模式`就�
 
 关系图：
 
+![1697009162510](image/React18新特性解读&完整版升级指南/1697009162510.png)
+
 了解清楚他们的关系之后，我们可以继续探索 `并发更新`了：
 
 ## 并发特性：
@@ -607,7 +606,7 @@ export default App;
 
 然后启动项目，查看一下打印的执行堆栈图：
 
-![QQ截图20220505072516.jpg](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/8b3f0b644d014379a574fe0cd94bf340~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?)
+![1697010287635](image/React18新特性解读&完整版升级指南/1697010287635.png)
 
 此时我们的任务被拆分到每一帧不同的 `task` 中，`JS脚本`执行时间大体在 `5ms`左右，这样浏览器就有剩余时间执行**样式布局**和 **样式绘制** ，减少掉帧的可能性。
 
@@ -640,7 +639,7 @@ export default App;
 
 启动项目，查看一下打印的执行堆栈图：
 
-![999.jpg](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3901498a6dc340a4bf48ba935dc55b5f~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp?)
+![1697010385665](image/React18新特性解读&完整版升级指南/1697010385665.png)
 
 可以从打印的执行堆栈图看到，此时由于组件数量繁多（10000个），JS执行时间为 `500ms`，也就是意味着，在没有并发特性的情况下：一次性渲染10000个标签的时候，页面会阻塞大约 `0.5秒`，造成卡顿，但是如果开启了并发更新，就不会存在这样的问题。
 
