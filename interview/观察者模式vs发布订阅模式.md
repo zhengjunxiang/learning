@@ -1,5 +1,7 @@
 [原文链接](https://juejin.cn/post/6978728619782701087)
+
 # 定性区别
+
 观察者是经典软件设计模式中的一种，但发布订阅只是软件架构中的一种消息范式。
 
 # 组成区别
@@ -10,9 +12,11 @@
 # 各自实现
 
 ## 观察者模式实现
+
 观察者模式一般至少有一个可被观察的对象 Subject ，可以有多个观察者去观察这个对象。二者的关系是通过被观察者主动建立的，被观察者至少要有三个方法——添加观察者、移除观察者、通知观察者。当被观察者将某个观察者添加到自己的观察者列表后，观察者与被观察者的关联就建立起来了。此后只要被观察者在某种时机触发通知观察者方法时，观察者即可接收到来自被观察者的消息。
 
 被观察者
+
 ```
 class Subject {
 
@@ -25,18 +29,19 @@ class Subject {
   }
 
   removeObserver(observer) {
-    const index = this.observerList.findIndex(o => o.name === observer.name);
-    this.observerList.splice(index, 1);
+	this.observerList = this.observerList.filter(o => o !== observer)
   }
 
   notifyObservers(message) {
-    const observers = this.observeList;
-    observers.forEach(observer => observer.notified(message));
+    const observers = 
+    this.observeList.forEach(observer => observer.notified(message));
   }
 
 }
 ```
+
 观察者
+
 ```
 class Observer {
 
@@ -53,6 +58,7 @@ class Observer {
 
 }
 ```
+
 ```
 const subject = new Subject();
 const observerA = new Observer('observerA', subject);
@@ -62,6 +68,7 @@ subject.notifyObservers('Hello from subject');
 subject.removeObserver(observerA);
 subject.notifyObservers('Hello again');
 ```
+
 上面的代码分别实现了观察者和被观察者的逻辑，其中二者的关联有两种方式：
 
 观察者主动申请加入被观察者的列表
@@ -114,13 +121,13 @@ class PubSub {
     this.listeners[type].push(cb);
   }
   notify(type) {
-    const messages = this.messages[type];
-    const subscribers = this.listeners[type] || [];
-    subscribers.forEach((cb, index) => cb(messages[index]));
+	(this.listeners[type] || []).forEach((cb) => cb(this.messages[type]));
   }
 }
 ```
+
 发布者
+
 ```
 class Publisher {
   constructor(name, context) {
@@ -133,7 +140,9 @@ class Publisher {
 }
 
 ```
+
 订阅者
+
 ```
 class Subscriber {
   constructor(name, context) {
@@ -146,7 +155,9 @@ class Subscriber {
 }
 
 ```
+
 使用
+
 ```
 const TYPE_A = 'music';
 const TYPE_B = 'movie';

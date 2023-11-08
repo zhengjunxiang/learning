@@ -1,22 +1,29 @@
 [http文章](https://juejin.cn/post/7166870049066582053)
+
 # 发展史
-## http 0.9 
+
+## http 0.9
+
 最早时候只支持传输html，请求中没有任何请求头没有描述数据的信息。只有一个get请求。服务器发送完毕，就关闭TCP连接，同一个TCP连接只能发送一个http请求。
 
 ## http 1.0 （不是正式版）
+
 引入了请求头和响应头，增加了status code和header等描述信息。增加了post put 请求，多字符集的支持，多部分的发送，权限，缓存。
 
 ## http 1.1(正式版)
+
 持久连接,创建tcp连接后可以不关闭。在http 1.1中默认开启了一个请求头connect:keep-alive进行在一个tcp链接的复用。pipeline一个tcp连接可以发送多个http请求。当然即使引入了长链接keep-alive，还存在一个问题就是基于http 1.0中是一个请求发送得到响应后才开始发送下一个请求，针对这个机制1.1提出了管线化pipelining机制，但是需要注意的是服务器对应同一tcp链接上的请求是一个一个去处理的，服务端都是按照请求顺序处理的第二个请求要等第一个请求处理完才能被处理。所以这就会导致一个比较严重的问题队头阻塞。
 
 如果说第一个发送的请求丢包了，那么服务器会等待这个请求重新发送过来在进行返回处理。之后才会处理下一个请求。即使浏览器是基于pipelining去多个请求同时发送的。
 
 pipeling虽然可以一次发多个请求 但是这几个请求是有顺序的，但是http2打破了这种顺序
-## http 2.0 
+
+## http 2.0
+
 提出了很多个优化点，其中最著名的就是解决了http1.1中的队头阻塞问题。一个TCP连接上完成承载任意数量的双向数据流
 
 ### 二进制分帧
-  
+
 先解释一下，就是将一条连接上所有传输的信息，分割为更小的消息和帧(消息则是由一个或者多个帧组成的)，并对他们采用二进制格式编码。首部信息放在Headers帧中，而主体信息被封装在Data帧中。而且在每个帧的首部都有一个标识位。那么问题就来了。
 
 1.为什么2.0可以对所有的内容进行二进制转换？
@@ -31,11 +38,10 @@ pipeling虽然可以一次发多个请求 但是这几个请求是有顺序的�
 
 还可以在一个连接上实现双向数据流以及乱序发送。因为在，每一个帧上都有一个标记位。浏览器和服务端双方可以前期乱序接收消息和帧。接收完毕按照标记位的排列来拼接成一整条信息。所以，浏览器并行发送的请求，服务器可以并行返回，而不需要按照顺序返回。
 
-
 ### 多路复用
-  
+
 支持使用同一个tcp链接，基于二进制(之前是字符串传输)分帧层进行发送多个请求，支持同时发送多个请求,同时服务器也可以处理不同顺序的请求而不必按照请每个请求的顺序进行处理返回。这就解决了http 1.1中的队头阻塞问题。多路复用就是在一条tcp连接上，请求可以并行发送，而无需等待前面的响应返回。
-  
+
 和1.0的管道的区别？
 
 管道也可以并行发送请求，但是返回响应的顺序则必须是发送时候的顺序。例如，发送A,B,C三个请求，那么返回的顺序就是A,B,C哪怕A返回之前，B,C已经准备好，依然要等到A返回，也容易造成阻塞。实际上，多路复用的基础就是二进制分帧，因为可以乱序发送和接收，所以就不必担心接收错误消息的问题，接收完毕直接拼接。
@@ -43,12 +49,16 @@ pipeling虽然可以一次发多个请求 但是这几个请求是有顺序的�
 [原文链接](https://blog.csdn.net/m0_60360320/article/details/119812431)
 
 ### 头部压缩
-在http2协议中对于请求头进行了压缩达到提交传输性能。通讯双方各自缓存一份头部字段表，既避免了重复header的传输，又减小了需要传输的大小。首部压缩实现的一个核心预设就是，在第一次请求之后，大部分的字段可以复用的。而且随着页面越来越复杂，同一个页面发出的请求会越来越多。如果头部不压缩的话，会造成很大的流量开销。对于相同的数据，不再通过每次请求和响应发送，通信期间几乎不会改变通用键-值对(用户代理、可接受的媒体类型，等等)只需发送一次。如果首部发生了变化，则只需将变化的部分加入到header帧中，改变的部分会加入到头部字段表中。实现原理：支持http2.0的浏览器和服务器会维护一个相同的静态表和一个动态表，以及内置一个霍夫曼编码表。静态表存储的是常见的一些头部，和一些很常见的头部键值对，例如method：get以及cookie。动态表开始是空的，如果头部命中静态表中的名称，那么就回将这份键值对加入动态表中，例如cookie：xxxx。这样做的原因在于，请求或则响应头命中了静态或者动态表的时候，只需要一个字节就能表示，可想而知，这个字节就是一个地址，指向表中的数据。来张大佬的图或许更加清晰(https://img-blog.csdnimg.cn/20210820095502815.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L20wXzYwMzYwMzIw,size_16,color_FFFFFF,t_70)
-  
+
+在http2协议中对于请求头进行了压缩达到提高传输性能。通讯双方各自缓存一份头部字段表，既避免了重复header的传输，又减小了需要传输的大小。首部压缩实现的一个核心预设就是，在第一次请求之后，大部分的字段可以复用的。而且随着页面越来越复杂，同一个页面发出的请求会越来越多。如果头部不压缩的话，会造成很大的流量开销。对于相同的数据，不再通过每次请求和响应发送，通信期间几乎不会改变通用键-值对(用户代理、可接受的媒体类型，等等)只需发送一次。如果首部发生了变化，则只需将变化的部分加入到header帧中，改变的部分会加入到头部字段表中。实现原理：支持http2.0的浏览器和服务器会维护一个相同的静态表和一个动态表，以及内置一个霍夫曼编码表。静态表存储的是常见的一些头部，和一些很常见的头部键值对，例如method：get以及cookie。动态表开始是空的，如果头部命中静态表中的名称，那么就回将这份键值对加入动态表中，例如cookie：xxxx。这样做的原因在于，请求或则响应头命中了静态或者动态表的时候，只需要一个字节就能表示，可想而知，这个字节就是一个地址，指向表中的数据。来张大佬的图或许更加清晰(https://img-blog.csdnimg.cn/20210820095502815.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L20wXzYwMzYwMzIw,size_16,color_FFFFFF,t_70)
+
 ### http2.0推送实现---Server push
+
 [原文链接](https://www.ruanyifeng.com/blog/2018/03/http2_server_push.html)
 http2中支持通过服务端主动推送给客户端对应的资源从而让浏览器提前下载缓存对应资源。如果正常客户端请求index.html的话，这个html里面有请求css和js文件，所以，需要重新请求css和js文件，但是http2.0能够“预测”主请求的依赖资源，在响应主请求的同时，主动并发推送依赖资源至客户端。推送将js和css文件一起和index.html一起返回。减少了请求。
+
 #### 配置文件写法
+
 ```
 server {
     listen 443 ssl http2;
@@ -72,25 +82,27 @@ server {
     }
 }
 ```
+
 其实就是最后多了两行http2_push命令。它的意思是，如果用户请求根路径/，就推送style.css和example.png。
 
 现在可以启动容器了。
 
-
-$ docker container run \
-  --rm \
-  --name mynginx \
-  --volume "$PWD/html":/usr/share/nginx/html \
-  --volume "$PWD/conf":/etc/nginx \
-  -p 127.0.0.2:8080:80 \
-  -p 127.0.0.2:8081:443 \
-  -d \
+$ docker container run 
+  --rm 
+  --name mynginx 
+  --volume "$PWD/html":/usr/share/nginx/html 
+  --volume "$PWD/conf":/etc/nginx 
+  -p 127.0.0.2:8080:80 
+  -p 127.0.0.2:8081:443 
+  -d 
   nginx
 打开浏览器，访问 https://127.0.0.2:8081 。浏览器会提示证书不安全，不去管它，继续访问，就能看到网页了。
 
 网页上看不出来服务器推送，必须打开"开发者工具"，切换到 Network 面板，就可以看到其实只发出了一次请求，style.css和example.png都是推送过来的。
 [服务端推送图片链接](https://www.ruanyifeng.com/blogimg/asset/2018/bg2018030502.png)
+
 #### 后端实现
+
 上面的服务器推送，需要写在服务器的配置文件里面。这显然很不方便，每次修改都要重启服务，而且应用与服务器的配置不应该混在一起。
 服务器推送还有另一个实现方法，就是后端应用产生 HTTP 回应的头信息Link命令。服务器发现有这个头信息，就会进行服务器推送。
 
@@ -99,7 +111,9 @@ Link: </styles.css>; rel=preload; as=style
 如果要推送多个资源，就写成下面这样。
 Link: </styles.css>; rel=preload; as=style, </example.png>; rel=preload; as=image
 ```
+
 这时，Nginx 的配置改成下面这样。
+
 ```
 server {
     listen 443 ssl http2;
@@ -114,9 +128,11 @@ server {
     }
 }
 ```
+
 如果服务器或者浏览器不支持 HTTP/2，那么浏览器就会按照 preload 来处理这个头信息，预加载指定的资源文件。事实上，这个头信息就是 preload 标准提出的，它的语法和as属性的值都写在了标准里面。
 
 #### 缓存问题
+
 服务器推送有一个很麻烦的问题。所要推送的资源文件，如果浏览器已经有缓存，推送就是浪费带宽。即使推送的文件版本更新，浏览器也会优先使用本地缓存。一种解决办法是，只对第一次访问的用户开启服务器推送。下面是 Nginx 官方给出的示例，根据 Cookie 判断是否为第一次访问。
 
 ```
@@ -141,6 +157,7 @@ map $http_cookie $resources {
     default "</style.css>; as=style; rel=preload";
 }
 ```
+
 服务器推送可以提高性能。网上测评的结果是，打开这项功能，比不打开时的 HTTP/2 快了8%，比将资源都嵌入网页的 HTTP/1 快了5%。可以看到，提升程度也不是特别多，大概是几百毫秒。而且，也不建议一次推送太多资源，这样反而会拖累性能，因为浏览器不得不处理所有推送过来的资源。只推送 CSS 样式表可能是一个比较好的选择。
 
 #### 服务器推送的缺点
@@ -149,6 +166,7 @@ map $http_cookie $resources {
 因为在有客户端缓存的情况下，仍然有服务器推送就属于浪费带宽了。
 
 ### 请求优先级
+
 [原文链接](https://juejin.cn/post/6844903745218674695)
 
 以正确的顺序请求页面资源对于快速的用户体验至关重要。想象一下，如果一个网页上有一堆图片，还有一个外部样式表，一些自定义Web字体和一些在head中的脚本。如果浏览器首先下载了所有图片并且最后加载了样式表，在所有内容都加载完毕前，页面将完全是空白页。如果浏览器首先加载了所有阻塞资源，接着是Web字体和图片，那么它可以更早地呈现页面，并让用户开始看到内容，同时加载其余的图片。我在Chrome浏览器性能工作上的大部分时间都花在了尝试优化加载资源的顺序以获得最佳用户体验上。
@@ -176,18 +194,23 @@ hash函数为 ((sid >> 1) & h2scf->streams_index_mask)     等价于sid%32
 2.多路复用在多个小资源和合并成一个大资源的情况下并没有优势[原文](https://jakearchibald.com/2021/f1-perf-part-7/#lots-of-little-resources-vs-one-big-resource)
 
 ## 关于http 1.1的pipelining机制和http 2.0的多路复用
+
 HTTP/1.1 without pipelining： 必须响应 TCP 连接上的每个 HTTP 请求，然后才能发出下一个请求。响应将以相同的顺序返回。
 HTTP/2 multiplexing:  TCP 连接上的每个 HTTP 请求都可以立即发出，而无需等待先前的响应返回。响应可以按任何顺序返回。
 
 ## http3.0
+
 [原文链接](https://www.smashingmagazine.com/2021/08/http3-core-concepts-part1/)
+
 ### 协议的改变QUIC
+
 [QUIC：基于 UDP 的多路复用和安全传输](https://www.rfc-editor.org/rfc/rfc9000.html)
 HTTP/3 本身是对 HTTP/2 的一个相对较小的改编，以使其与新的 QUIC 协议兼容。之所以需要 QUIC，是因为 TCP 自 Internet 早期就已经存在，并没有真正考虑到最大效率。例如，TCP 需要一个“握手”来建立一个新的连接。这样做是为了确保客户端和服务器都存在并且他们愿意并且能够交换数据。然而，它也需要一个完整的网络往返才能完成，然后才能对连接进行任何其他操作。如果客户端和服务器在地理上相距遥远，则每次往返时间 (RTT) 可能会花费超过 100 毫秒，从而导致明显的延迟。作为第二个示例，TCP 将其传输的所有数据视为单个“文件”或字节流，即使我们实际上是在同时使用它来传输多个文件（例如，当下载由以下内容组成的网页时）很多资源）。实际上，这意味着如果包含单个文件数据的 TCP 数据包丢失，那么所有其他文件也会延迟，直到这些数据包被恢复。这称为线头 (HoL) 阻塞。虽然这些低效率在实践中是可以控制的（否则，我们不会使用 TCP 超过 30 年），它们确实会以明显的方式影响更高级别的协议，例如 HTTP。这里的关键点是，我们需要的不是真正的 HTTP/3，而是“TCP/2”，我们在此过程中“免费”获得了 HTTP/3。我们对 HTTP/3 感到兴奋的主要特性（更快的连接设置、更少的 HoL 阻塞、连接迁移等）实际上都来自 QUIC。您可能听说过的一件事是 QUIC 在另一个协议之上运行，称为用户数据报协议(UDP)。这是真的，但不是出于许多人声称的（性能）原因。理想情况下，QUIC 应该是一个完全独立的新传输协议，直接在我上面分享的图片中显示的协议栈中的 IP 之上运行。但是，这样做会导致我们在尝试发展 TCP 时遇到的相同问题：首先必须更新 Internet 上的所有设备才能识别和允许 QUIC。幸运的是，我们可以在 Internet 上另一种广泛支持的传输层协议：UDP 之上构建 QUIC。在 UDP 之上，QUIC 基本上重新实现了几乎所有使 TCP 成为如此强大和流行（但速度较慢）协议的特性。QUIC 是绝对可靠的，它使用对接收到的数据包和重传的确认来确保丢失的数据包仍然到达。QUIC 也仍然建立连接并且具有高度复杂的握手。没有 TLS（安全传输协议） 就没有 QUIC 。
 
 QUIC 还使用所谓的流量控制和拥塞控制机制来防止发送方使网络或接收方过载，但这也会使 TCP 比使用原始 UDP 时慢。关键是 QUIC 以比 TCP 更智能、更高效的方式实现这些功能。
 
 ## https
+
 在HTTP协议中有可能存在信息窃取或身份伪装等安全问题。数据隐私性，内容经过对称加密，每个连接生成一个唯一的加密密钥。并建立一个信息安全通道，来保证传输过程中的数据安全。对网站服务器进行真实身份认证。第三方无法伪造服务端（客户端）身份。数据完整性：内容传输经过完整性校验。
 
 [https](https://juejin.cn/post/6844903830916694030)
@@ -243,7 +266,6 @@ https利用TLS/SSL进行对称加密+非对称加密,对称密钥的好处是解
 
 使用对称密钥的好处是解密的效率比较快，使用非对称密钥的好处是可以使得传输的内容不能被破解，因为就算你拦截到了数据，但是没有对应的私钥，也是不能破解内容的。就比如说你抢到了一个保险柜，但是没有保险柜的钥匙也不能打开保险柜。那我们就将对称加密与非对称加密结合起来,充分利用两者各自的优势，在交换密钥环节使用非对称加密方式，之后的建立通信交换报文阶段则使用对称加密方式。
 
-
 ### https工作流程
 
 1.Client发起一个HTTPS,Client知道需要连接Server的443（默认）端口。
@@ -261,8 +283,8 @@ HTTPS标准端口443，HTTP标准端口80;
 HTTPS基于传输层，HTTP基于应用层;
 HTTPS在浏览器显示绿色安全锁，HTTP没有显示;
 
-
 # http状态码
+
 http 状态码 204 301 302 304 400 401 403 404 含义
 
 http 状态码 204 （无内容） 服务器成功处理了请求，但没有返回任何内容
@@ -288,22 +310,22 @@ http 状态码 302 （临时移动） 服务器目前从不同位置的网页响
 
 使用场景
 
-场景一 
+场景一
         301 -- 想换个域名，旧的域名不用啦，这样用户访问旧域名时用301就重定向到新的域名。其实也是告诉搜索引擎收录的域名需要对新的域名进行收录。
 
-场景二 
+场景二
         302 -- 登录后重定向到指定的页面，这种场景比较常见就是登录成功跳转到具体的系统页面。
 
-场景三 
+场景三
         301 -- 有时候需要自动刷新页面，比如5秒后回到订单详细页面之类。
 
-场景四 
+场景四
         302 -- 有时系统进行升级或者切换某些功能时，需要临时更换地址。
 
-场景五 
+场景五
         302 -- 像微博之类的使用短域名，用户浏览后需要重定向到真实的地址之类。
 
-302 重定向和网址劫持（URL hijacking） 
+302 重定向和网址劫持（URL hijacking）
 从网址A 做一个302 重定向到网址B 时，主机服务器的隐含意思是网址A 随时有可能改主意，重新显示本身的内容或转向其他的地方。大部分的搜索引擎在大部分情况下，当收到302重定向时，一般只要去抓取目标网址就可以了，也就是说网址B。如果搜索引擎在遇到302 转向时，百分之百的都抓取目标网址B 的话，就不用担心网址URL 劫持了。问题就在于，有的时候搜索引擎，尤其是Google，并不能总是抓取目标网址。比如说，有的时候A 网址很短，但是它做了一个302重定向到B网址，而B网址是一个很长的乱七八糟的URL网址，甚至还有可能包含一些问号之类的参数。很自然的，A网址更加用户友好，而B网址既难看，又不用户友好。这时Google很有可能会仍然显示网址A。由于搜索引擎排名算法只是程序而不是人，在遇到302重定向的时候，并不能像人一样的去准确判定哪一个网址更适当，这就造成了网址URL劫持的可能性。也就是说，**一个不道德的人在他自己的网址A做一个302重定向到你的网址B**，出于某种原因， Google搜索结果所显示的仍然是网址A，但是所用的网页内容却是你的网址B上的内容，这种情况就叫做网址URL 劫持。你辛辛苦苦所写的内容就这样被别人偷走了。302重定向所造成的网址URL劫持现象，已经存在一段时间了。不过到目前为止，似乎也没有什么更好的解决方法。在正在进行的谷歌大爸爸数据中心转换中，302 重定向问题也是要被解决的目标之一。从一些搜索结果来看，网址劫持现象有所改善，但是并没有完全解决。
 
 大体意思是会引起搜索引擎的排名，而且**302重定向很容易被搜索引擎误认为是利用多个域名指向同一网站，那么你的网站就会被封掉。**
@@ -316,8 +338,8 @@ http 状态码 401 （未授权） 请求要求身份验证。 对于需要登�
 http 状态码 403 （禁止） 服务器拒绝请求。（一般为客户端的用户权限不够）
 http 状态码 404 （未找到） 服务器找不到请求的网页。
 
-
 # 跨域CORS
+
 [跨域解决方案](https://juejin.cn/post/7017614708832206878#heading-5)
 cors是解决跨域问题的常见解决方法，关键是服务器要设置Access-Control-Allow-Origin，控制哪些域名可以共享资源。origin是cors的重要标识，只要是非同源或者POST请求都会带上Origin字段】
 
@@ -326,11 +348,10 @@ cors是解决跨域问题的常见解决方法，关键是服务器要设置Acce
 CORS将请求分为**简单请求**和**非简单请求**
 
 * 简单请求
-1）只支持HEAD，GET、POST请求方式
-2）没有自定义的请求头；对CORS安全的首部集合 Accept Accept-Language Content-Language Range Content-Type
-3）Content-Type：只限于三个值application/x-www-form-urlencoded、multipart/form-data、text/plain
-对于简单请求，浏览器直接发出CORS请求。具体来说，就是在头信息之中，增加一个Origin字段。如果浏览器发现这个接口回应的头信息没有包含Access-Control-Allow-Origin字段的话就会报跨域错误。
-
+  1）只支持HEAD，GET、POST请求方式
+  2）没有自定义的请求头；对CORS安全的首部集合 Accept Accept-Language Content-Language Range Content-Type
+  3）Content-Type：只限于三个值application/x-www-form-urlencoded、multipart/form-data、text/plain
+  对于简单请求，浏览器直接发出CORS请求。具体来说，就是在头信息之中，增加一个Origin字段。如果浏览器发现这个接口回应的头信息没有包含Access-Control-Allow-Origin字段的话就会报跨域错误。
 * 非简单请求的跨域处理
 
 非简单请求，会在正式通信之前，增加一次HTTP查询请求，称为"预检"请求（options）,用来判断当前网页所在的域名是否在服务器的许可名单之中。如果在许可名单中，就会发正式请求；如果不在，就会报跨越错误。
@@ -346,7 +367,6 @@ CORS将请求分为**简单请求**和**非简单请求**
 （3）Access-Control-Expose-Headers
 
 该字段可选。CORS请求时，XMLHttpRequest对象的getResponseHeader()方法只能拿到6个基本字段：Cache-Control、Content-Language、Content-Type、Expires、Last-Modified、Pragma。如果想拿到其他字段，就必须在Access-Control-Expose-Headers里面指定。上面的例子指定，getResponseHeader('FooBar')可以返回FooBar字段的值。
-
 
 "预检"请求用的请求方法是OPTIONS，表示这个请求是用来询问的。头信息里面，关键字段是Origin，表示请求来自哪个源。除了Origin字段，"预检"请求的头信息包括两个特殊字段。
 
@@ -371,9 +391,9 @@ jsonp缺点:
 2.在登录模块中需要用到session来判断当前用户的登录状态,这时候由于是跨域的原因,前后台的取到的session是不一样的,那么就不能就行session来判断
 
 ## 同源策略
+
 同源 = 协议、域名、端口相同。
 同源政策的目的，是为了保证用户信息的安全，防止恶意的网站窃取数据。设想这样一种情况：A网站是一家银行，用户登录以后，又去浏览其他网站。如果其他网站可以读取A网站的 Cookie，会发生什么？很显然，如果 Cookie 包含隐私（比如存款总额），这些信息就会泄漏。更可怕的是，Cookie 往往用来保存用户的登录状态，如果用户没有退出登录，其他网站就可以冒充用户，为所欲为。因为浏览器同时还规定，提交表单不受同源政策的限制。
-
 
 ## cookie
 
@@ -388,20 +408,25 @@ Cookie 的缺点
 
 ### Cookies 的属性
 
-#### Name/Value 
+#### Name/Value
+
 用 JavaScript 操作 Cookie 的时候注意对 Value 进行编码处理。
 
-#### Expires 
+#### Expires
+
 ##### Expires有值
+
 用于设置 Cookie 的过期时间。比如：Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
 
 ##### Expires无值----会话cookie
+
 当 Expires 属性缺省时，表示是会话性 Cookie，像上图 Expires 的值为 Session，表示的就是会话性 Cookie。当为会话性 Cookie 的时候，值保存在客户端内存中，并在用户关闭浏览器时失效。需要注意的是，有些浏览器提供了会话恢复功能，这种情况下即使关闭了浏览器，会话期 Cookie 也会被保留下来，就好像浏览器从来没有关闭一样。
 
 ##### 持久化cookie
+
 与会话性 Cookie 相对的是持久性 Cookie，持久性 Cookies 会保存在用户的硬盘中，直至过期或者清除 Cookie。这里值得注意的是，设定的日期和时间只与客户端相关，而不是服务端。
 
-#### Max-Age 
+#### Max-Age
 
 用于设置在 Cookie 失效之前需要经过的秒数。比如：Set-Cookie: id=a3fWa; Max-Age=604800; Max-Age 可以为正数、负数、甚至是 0。
 
@@ -412,11 +437,13 @@ Cookie 的缺点
 ##### 负值
 
 当 max-Age 属性为负数，则表示该 Cookie 只是一个会话性 Cookie。
+
 ##### 0
 
 当 max-Age 为 0 时，则会立即删除这个 Cookie。
 
 #### 假如 Expires 和 Max-Age 都存在，Max-Age 优先级更高
+
 #### Domain
 
 Domain 指定了 Cookie 可以送达的主机名。假如没有指定，那么默认值为当前文档访问地址中的主机部分（但是不包含子域名）。像淘宝首页设置的 Domain 就是 .taobao.com，这样无论是 a.taobao.com 还是 b.taobao.com 都可以使用 Cookie。在这里注意的是，不能跨域设置 Cookie，比如阿里域名下的页面把 Domain 设置成百度是无效的：Set-Cookie: qwerty=219ffwef9w0f; Domain=baidu.com; Path=/; Expires=Wed, 30 Aug 2020 00:00:00 GMT
@@ -434,6 +461,7 @@ Path 指定了一个 URL 路径，这个路径必须出现在要请求的资源�
 设置 HTTPOnly 属性可以防止客户端脚本通过 document.cookie 等方式访问 Cookie，有助于避免 XSS 攻击。
 
 #### SameSite
+
 Chrome80 版本中默认屏蔽了第三方的 Cookie，SameSite 属性可以让 Cookie 在跨站请求时不会被发送，从而可以阻止跨站请求伪造攻击（CSRF）。
 
 ##### 属性值
@@ -452,14 +480,14 @@ None 无论是否跨站都会发送 Cookie
 
 same-site:lax的具体规则如下：
 
-类型例子                                     是否发送 
-a链接<a href="..."></a>                       发送
-预加载<link rel="prerender" href="..."/>      发送
-GET 表单<form method="GET" action="...">      发送
-POST 表单<form method="POST" action="...">   不发送
-iframe<iframe src="..."></iframe>           不发送
+类型例子                                     是否发送
+a链接`<a href="..."></a>`                       发送
+预加载`<link rel="prerender" href="..."/>`      发送
+GET 表单`<form method="GET" action="...">`      发送
+POST 表单`<form method="POST" action="...">`   不发送
+iframe`<iframe src="..."></iframe>`           不发送
 AJAX axios.post                             不发送
-图片<img src="..."></image>                  不发送
+图片`<img src="..."></image>`                  不发送
 
 而在这之前是会全部发送的。
 
@@ -489,6 +517,7 @@ AJAX axios.post                             不发送
 
 7.像a链接这种，没有受到影响，依旧会带上三方cookie，这样可以保证从百度搜索中打开淘宝，是有登录状态的。
 ```
+
 ##### 设置SameSite=none要注意的问题
 
 1、HTTP 接口不支持 SameSite=none
@@ -498,12 +527,14 @@ AJAX axios.post                             不发送
 IOS 12 的 Safari 以及老版本的一些 Chrome 会把 SameSite=none 识别成 SameSite=Strict，所以服务端必须在下发 Set-Cookie 响应头时进行 User-Agent 检测，对这些浏览器不下发 SameSite=none 属性
 
 ##### same-party
+
 [原文链接](https://juejin.cn/post/7087206796351242248)
 将same-site:Lax改成same-site:None 这不是长久之策，一来，浏览器把same-site的默认值从从none调整到lax可以避免CSRF攻击，保障安全，可我们为了业务正常运行，却又走了回头路；二来，chrome承诺2022年，也就是今年，会全面禁用三方cookie，届时和在safari一样，我们没法再用这种方法去hack。
 如果我们不想使用same-site:none，或者说，未来用不了这种方式了，same-party将是我们的唯一选择。
 
 继续沿用阿里系的例子，same-party可以把.taobao.com、.tmall.com和.alimama.com三个站合起来，它们设置的cookie在这个集合内部不会被当作第三方cookie对待。
 首先需要定义First-Party集合：在.taobao.com、.tmall.com和.alimama.com三个站的服务器下都加一个配置文件，放在/.well-know/目录下，命名为first-party-set。其中一个是“组长”，暂定为.taobao.com，在它的的服务器下写入
+
 ```
 // /.well-know/first-party-set
 {
@@ -511,7 +542,9 @@ IOS 12 的 Safari 以及老版本的一些 Chrome 会把 SameSite=none 识别成
   "members": [".tmall.com", ".alimama.com"]
 }
 ```
+
 另外两个是组员：
+
 ```
 // /.well-know/first-party-set
 {
@@ -520,12 +553,15 @@ IOS 12 的 Safari 以及老版本的一些 Chrome 会把 SameSite=none 识别成
 ```
 
 并且，在下发cookie时，需要注明same-party属性：
+
 ```
 Set-Cookie: id=nian; SameParty; Secure; SameSite=Lax; domain=.taobao.com
 ```
+
 这样，我们打开.tmall.com的网站，向.taobao.com发起AJAX请求，都会带上这个cookie，即使当前的same-site属性是lax，因为这集合中的三个域名都会被当作一个站对待，也就是说，在浏览器眼中，这个cookie现在就是第一方cookie。而不在集合中的baidu.com发起的AJAX请求则不会带上。需要注意的是，使用same-party属性时，必须要同时使用https(secure属性)，并且same-site不能是strict。
 
 ##### 第三方cookie，
+
 现在有三个请求：
 
 网页www.a.com/index.html的前端页面，去请求接口www.b.com/api
@@ -540,6 +576,7 @@ Set-Cookie: id=nian; SameParty; Secure; SameSite=Lax; domain=.taobao.com
 「不认来源，只看目的」规矩在2020年开始被打破，这种变化体现在浏览器将same-site:lax设置为默认属性。chrome操作比较平缓，目前可以手动设置same-site:none恢复之前规则。但在safari中如果这样设置，会被当作same-site:strict。可以看到，在safari中使用的全是第一方cookie，直观的体验就是在天猫登录完，打开淘宝，还需要再登录一次。也就是说（strict模式）现在cookie的取用是「既看来源，又看目的」了。none代表完全不做限制，即之前「不认来源，只看目的」的cookie取用原则。
 
 ### 判断两个域名属于SameSite
+
 [原文链接](https://juejin.cn/post/6844904095711494151)
 
 站（Site）= eTLD(有效顶级域名) + 1
@@ -552,21 +589,21 @@ www.a.taobao.com 和 www.b.taobao.com 是同站，a.github.io 和 b.github.io �
 
 TLD+1 表示顶级域名和它前面二级域名的组合，例如
 
-* https://www.example.com:443/foo TLD 是 .com TLD+1 是 example.com 
-
+* https://www.example.com:443/foo TLD 是 .com TLD+1 是 example.com
 * https://www.example.com.cn TLD+1 就是 com.cn，并不能表示这个站点，真正能表示这个站点的应该是 example.com.cn 才对，所以衍生出 eTLD 的概念，eTLD：com.cn，eTLD+1：example.com.cn。eTLD是有效顶级域名，而「站」的定义就是 eTLD+1。
 
 以 https://www.example.com:443 为例，下面给出了一系列的网址是否与其同源或同站的解释
-对比网址                         是否同源                  是否同站 
+对比网址                         是否同源                  是否同站
 https://www.other.com:443       否，因为 hostname 不同    否，因为 eTLD+1 不同
-https://example.com:443         否，因为 hostname 不同    是，子域名不影响 
+https://example.com:443         否，因为 hostname 不同    是，子域名不影响
 https://login.example.com:443   否，因为 hostname 不同    是，子域名不影响
-http://www.example.com:443      否，因为 scheme 不同      是，协议不影响 
-www.example.com:80              否，因为 port 不同        是，端口号不影响 
+http://www.example.com:443      否，因为 scheme 不同      是，协议不影响
+www.example.com:80              否，因为 port 不同        是，端口号不影响
 www.example.com:443             是，完全匹配              是，完全匹配
 www.example.com                 是，隐式完全匹配 (https端口号是443)是，端口号不影响
 
 ### same-site如何防止csrf攻击
+
 1、用户 A 在网站 a.com 登录后，浏览器存储 a.com 的 cookie
 2、用户 A 在网站 a.com 进行交易操作，携带 cookie 调用接口 a.com/api/transfer
 3、用户 A 同时打开了 b.com，一个欺诈网站
@@ -576,6 +613,7 @@ www.example.com                 是，隐式完全匹配 (https端口号是443)�
 same-site 的默认值是 lax，这种情况下，不属于 same site 的请求，就不会携带 cookie。
 
 ### SameSite=None时不声明Secure导致set-cookie失败
+
 SameSite=None，则必须声明Secure，并且是https安全协议，否则无法写入cookie。
 
 ### chrome运行本地项目无法携带跨域cookie问题解决方案-SameSite=None无法设置问题
@@ -583,23 +621,31 @@ SameSite=None，则必须声明Secure，并且是https安全协议，否则无�
 chrome 80版本后浏览器默认的SameSite策略为Lax，该策略中对于当前域名向第三方域名中发送跨域请求时无法携带cookie，因此本地管理台项目的请求发出去时都没有携带cookie，导致后端接口检测不到该请求携带的用户信息。
 [解决方案](https://juejin.cn/post/6974593447395065886)
 
-
 # Cache-Control请求头
+
 [原文链接](https://juejin.cn/post/7127194919235485733)
-## 1.可缓存性 
+
+## 1.可缓存性
+
 1.Cache-Control: public 代表http请求返回的内容所经过的任何路径中，http代理服务器，客户端，服务器都可以缓存、表示资源即可以被浏览器缓存也可以被代理服务器缓存
 2.Cache-Control: private 只有发起请求的浏览器才能缓存
 3.Cache-Control: no-cache 强制进行协商缓存
 4.Cache-Control: no-store 是本地和proxy服务器都不能缓存
-## 2.到期max-age=<seconds>
-Cache-Control: max-age=<seconds>可以代替max-age在服务器才生效
-Cache-Control: s-maxage=<seconds>可以代替max-age但是只有在代理服务器才生效，优先级比max-age高
+
+## 2.到期max-age=`<seconds>`
+
+Cache-Control: max-age=`<seconds>`可以代替max-age在服务器才生效
+Cache-Control: s-maxage=`<seconds>`可以代替max-age但是只有在代理服务器才生效，优先级比max-age高
 在代理服务器中s-maxage优先级高于max-age
-Cache-Control: max-stale=<seconds> 在max-age过期之后，发起请求一方主动写有max-stale的话代表即便缓存过期了，只要在max-stale时间内，也可以使用缓存的内容，而不需要去服务器重新请求内容
+Cache-Control: max-stale=`<seconds>` 在max-age过期之后，发起请求一方主动写有max-stale的话代表即便缓存过期了，只要在max-stale时间内，也可以使用缓存的内容，而不需要去服务器重新请求内容
+
 ## 3.重新验证
+
 Cache-Control: must-revalidate 如果max-age到期了 那么必须去服务端重新验证内容是否真的过期了 不能直接使用本地缓存
 Cache-Control: proxy-revalidate 用于缓存服务器 过期时去服务器重新请求数据
+
 ## 4.压缩格式转换
+
 Cache-Control: no-transform 是返回内容过大时，不允许代理服务器压缩格式转换
 
 头只是一个限制声明性的作用，没有强制约束.使用nginx做代理时，做catch 可以配置代理服务器如何做缓存操作配置如何生效
@@ -612,19 +658,23 @@ public：所有的内容都可以被缓存 (包括客户端和代理服务器，
 private：所有的内容只有客户端才可以缓存，代理服务器不能缓存。默认值。
 
 # 浏览器的缓存机制
+
 [原文介绍](https://juejin.cn/post/6844903747357769742)
 重点看原文的一些案例
+
 ## 缓存位置
+
 [PWA主要是优化web APP使用service worker](https://juejin.cn/post/6896426453303476238)
 从缓存位置上来说分为四种，并且各自有优先级，当依次查找缓存且都没有命中的时候，才会去请求网络。
 浏览器中的缓存位置一共有四种，按优先级从高到低排列分别是：
 
 Service Worker PC端会Service Worker为主 移动端会 强缓存为主
-Memory Cache 
+Memory Cache
 Disk Cache
 Push Cache
 
 ### Service Worker
+
 是运行在浏览器背后的独立线程，一般可以用来实现缓存功能。使用 Service Worker的话，传输协议必须为 HTTPS。Service Worker 的缓存与浏览器其他内建的缓存机制不同，它可以让我们自由控制缓存哪些文件、如何匹配缓存、如何读取缓存，并且缓存是持续性的。由于它脱离了浏览器的窗体，因此无法直接访问DOM。虽然如此，但它仍然能帮助我们完成很多有用的功能，比如离线缓存、消息推送和网络代理等功能。其中的离线缓存就是 Service Worker Cache
 
 和Memory Cache不同的是Service Worker没有任何预设的规则，它完全取决于开发者如何设置它。
@@ -634,24 +684,28 @@ Service Worker和Memory Cache主要的区别就是它是持久化的，即使tab
 一种删除Service Worker缓存的方法是使用JS代码，cache.delete(resource)；还有一种导致缓存被删除的情况是触发了系统的存储空间上限，此时页面的Service Worker缓存连同indexedDB, localStorage等都会一起被回收掉。
 
 Service Worker仅仅在某个限定的作用域内生效，大多数情况下仅对单个host内的文档发起的请求生效。
+
 ### Memory Cache
+
 几乎所有的网络请求资源都会被浏览器自动加入到 memory cache 中。但是也正因为数量很大但是浏览器占用的内存不能无限扩大这样两个因素，memory cache 注定只能是个“短期存储”。常规情况下，浏览器的 TAB 关闭后该次浏览的 memory cache 便告失效 (为了给其他 TAB 腾出位置)。而如果极端情况下 (例如一个页面的缓存就占用了超级多的内存)，那可能在 TAB 没关闭之前，排在前面的缓存就已经失效了。
 刚才提过，几乎所有的请求资源 都能进入 memory cache，这里细分一下主要有两块：
 
 preloader。如果你对这个机制不太了解，这里做一个简单的介绍，详情可以参阅这篇文章。
 熟悉浏览器处理流程的同学们应该了解，在浏览器打开网页的过程中，会先请求 HTML 然后解析。之后如果浏览器发现了 js, css 等需要解析和执行的资源时，它会使用 CPU 资源对它们进行解析和执行。在古老的年代(大约 2007 年以前)，“请求 js/css - 解析执行 - 请求下一个 js/css - 解析执行下一个 js/css” 这样的“串行”操作模式在每次打开页面之前进行着。很明显在解析执行的时候，网络请求是空闲的，这就有了发挥的空间：我们能不能一边解析执行 js/css，一边去请求下一个(或下一批)资源呢？
-这就是 preloader 要做的事情。不过 preloader 没有一个官方标准，所以每个浏览器的处理都略有区别。例如有些浏览器还会下载 css 中的 @import 内容或者 <video> 的 poster等。
+这就是 preloader 要做的事情。不过 preloader 没有一个官方标准，所以每个浏览器的处理都略有区别。例如有些浏览器还会下载 css 中的 @import 内容或者 `<video>` 的 poster等。
 而这些被 preloader 请求够来的资源就会被放入 memory cache 中，供之后的解析执行操作使用。
 
-preload (虽然看上去和刚才的 preloader 就差了俩字母)。实际上这个大家应该更加熟悉一些，例如 <link rel="preload">。这些显式指定的预加载资源，也会被放入 memory cache 中。
+preload (虽然看上去和刚才的 preloader 就差了俩字母)。实际上这个大家应该更加熟悉一些，例如 `<link rel="preload">`。这些显式指定的预加载资源，也会被放入 memory cache 中。
 
-memory cache 机制保证了一个页面中如果有两个相同的请求 (例如两个 src 相同的 <img>，两个 href 相同的 <link>)都实际只会被请求最多一次，避免浪费。
+memory cache 机制保证了一个页面中如果有两个相同的请求 (例如两个 src 相同的 `<img>`，两个 href 相同的 `<link>`)都实际只会被请求最多一次，避免浪费。
 不过在匹配缓存时，除了匹配完全相同的 URL 之外，还会比对他们的类型，CORS 中的域名规则等。因此一个作为脚本 (script) 类型被缓存的资源是不能用在图片 (image) 类型的请求中的，即便他们 src 相等。
 在从 memory cache 获取缓存内容时，浏览器会忽视例如 max-age=0, no-cache 等头部配置。例如页面上存在几个相同 src 的图片，即便它们可能被设置为不缓存，但依然会从 memory cache 中读取。这是因为 memory cache 只是短期使用，大部分情况生命周期只有一次浏览而已。而 max-age=0 在语义上普遍被解读为“不要在下次浏览时使用”，所以和 memory cache 并不冲突。
 但如果站长是真心不想让一个资源进入缓存，就连短期也不行，那就需要使用 no-store。存在这个头部配置的话，即便是 memory cache 也不会存储，自然也不会从中读取了。(后面的第二个示例有关于这点的体现)
 
-在preload的情况下 如果资源有强缓存字段 那么资源会被缓存在Disk Cache 中 
+在preload的情况下 如果资源有强缓存字段 那么资源会被缓存在Disk Cache 中
+
 ### Disk Cache
+
 HTTP Cache也被叫做Disk Cache。
 
 首先，HTTP Cache是持久化的，并且允许跨session甚至是跨站点地重用。如果一个资源被一个站点缓存在HTTP Cache中，另一个站点如果有相同的请求，是可以重用的。
@@ -662,7 +716,7 @@ HTTP Cache也被叫做Disk Cache。
 
 HTTP Cache有一个基于缓存的组件，用来匹配请求的资源是否命中它已有的缓存资源，如果有发现命中的资源，它需要从硬盘里取获取这个资源，这是一个昂贵的操作。
 
-我们之前提到HTTP Cache是遵循HTTP语义的，这几乎是完全正常的，只有一个例外的情况：当一个资源是为了下个导航被预抓取回来的（通过<link rel=prefetch> 或者浏览器的其他内部逻辑）,即使它是不可储存的，它也将会被保留到下个导航。所以当这些预抓取资源到达HTTP Cache时，它将被保留大约5分钟，并且期间不会被重新验证。
+我们之前提到HTTP Cache是遵循HTTP语义的，这几乎是完全正常的，只有一个例外的情况：当一个资源是为了下个导航被预抓取回来的（通过`<link rel=prefetch>` 或者浏览器的其他内部逻辑）,即使它是不可储存的，它也将会被保留到下个导航。所以当这些预抓取资源到达HTTP Cache时，它将被保留大约5分钟，并且期间不会被重新验证。
 
 disk cache 也叫 HTTP cache，顾名思义是存储在硬盘上的缓存，因此它是持久存储的，是实际存在于文件系统中的。而且它允许相同的资源在跨会话，甚至跨站点的情况下使用，例如两个站点都使用了同一张图片。
 
@@ -671,6 +725,7 @@ disk cache 会严格根据 HTTP 头信息中的各类字段来判定哪些资源
 凡是持久性存储都会面临容量增长的问题，disk cache 也不例外。在浏览器自动清理时，会有神秘的算法去把“最老的”或者“最可能过时的”资源删除，因此是一个一个删除的。不过每个浏览器识别“最老的”和“最可能过时的”资源的算法不尽相同，可能也是它们差异性的体现。
 
 ### Push Cache
+
 推送缓存）是 HTTP/2 中的内容，当以上三种缓存都没有命中时，它才会被使用。它只在会话（Session）中存在，一旦会话结束就被释放，并且缓存时间也很短暂
 
 Push Cache是HTTP/2推送的资源存储的地方。它是HTTP/2会话的一部分。如果HTTP/2会话关闭了，储存在其中的资源都会消失。从不同的会话发起的请求将不会命中Push Cache中的资源。所有未被使用的资源在Push Cache会储存优先的时间（Chromium浏览器大约5分钟）。
@@ -678,11 +733,13 @@ Push Cache是HTTP/2推送的资源存储的地方。它是HTTP/2会话的一部�
 Push Cache根据请求的URL以及请求表头来匹配资源，但是不是严格遵守HTTP语义的。
 
 如果一个请求命中了Push Cache里的资源，那么这个资源将会从Push Cache里移除，然后经过HTTP Cache时，会保留一份拷贝缓存下来，再经过Service Worker（如果有）时，也会保留一份拷贝储存下来，最后请求的资源回到渲染引擎时，Memory Cache会存储一份对该资源的引用，如果将来本导航会话中的相同的资源请求，这份引用就可以直接被分配给该请求。
+
 ## 缓存过程分析
+
 浏览器对于缓存的处理是根据第一次请求资源时返回的响应头来确定的
 
-        第一次发起http请求
-浏览器----------------------->浏览器缓存      
+    第一次发起http请求
+浏览器----------------------->浏览器缓存
 浏览器<-----------------------没有缓存的结果和缓存标识
                    发起http请求
 浏览器--------------------------------------->服务器
@@ -713,7 +770,6 @@ Expires 是 HTTP/1 的产物，受限于本地时间，如果修改了本地时�
 Etag的缺点：
 
 ETag需要计算文件指纹这样意味着，服务端需要更多的计算开销。。如果文件尺寸大，数量多，并且计算频繁，那么ETag的计算就会影响服务器的性能。显然，ETag在这样的场景下就不是很适合。ETag有强验证和弱验证，所谓将强验证，ETag生成的哈希码深入到每个字节。哪怕文件中只有一个字节改变了，也会生成不同的哈希值，它可以保证文件内容绝对的不变。但是，强验证非常消耗计算量。ETag还有一个弱验证，弱验证是提取文件的部分属性来生成哈希值。因为不必精确到每个字节，所以他的整体速度会比强验证快，但是准确率不高。会降低协商缓存的有效性。
-
 
 协商缓存生效，返回304和Not Modified
           发起http请求                      缓存失效返回缓存标识                 携带缓存标识发起http请求
@@ -757,7 +813,6 @@ Cache-Control: max-age=600, must-revalidate
 
 如果我不使用must-revalidate，只是Cache-Control: max-age=600，浏览器缓存的自动清理机制就不会执行么？如果浏览器缓存的自动清理机制执行的话那后续的index.js被清掉的所引发的情况都是一样的呀！
 
-
 'max-age=600' 和 'max-age=600,must-revalidate' 有什么区别？
 没有区别。在列出 max-age 了之后，must-revalidate 是否列出效果相同，浏览器都会在超过 max-age 之后进行校验，验证缓存是否可用。
 在 HTTP 的规范中，只阐述了 must-revalidate 的作用，却没有阐述不列出 must-revalidate 时，浏览器应该如何解决缓存过期的问题，因此这其实是浏览器实现时的自主决策。（可能有少数浏览器选择在源站点无法访问时继续使用过期缓存，但这取决于浏览器自身）
@@ -778,11 +833,12 @@ Cache-Control: max-age=600, must-revalidate
 普通刷新 (F5)：因为 TAB 并没有关闭，因此 memory cache 是可用的，会被优先使用(如果匹配的话)。其次才是 disk cache。
 强制刷新 (Ctrl + F5)：浏览器不使用缓存，因此发送的请求头部均带有 Cache-control: no-cache(为了兼容，还带了 Pragma: no-cache),服务器直接返回 200 和最新内容。
 
-
 # 资源验证
+
 浏览器创建请求后->本地缓存中如果命中就在本地缓存中取值->如果没有命中的话->代理缓存中找->如果代理服务器没有命中->向服务器请求数据
 
 # get & post 区别
+
 1. GET在浏览器回退时是无害的，而POST会再次提交请求。
 2. GET产生的URL地址可以被Bookmark，而POST不可以。
 3. GET请求会被浏览器主动cache，而POST不会，除非手动设置。
@@ -811,18 +867,24 @@ Cache-Control: max-age=600, must-revalidate
 备注：注意，即使你使用 PUT 方法，你仍有可能违反幂等性。如果你用和 POST 方法一样的方式来实现 PUT 方法，两者之间将没有任何区别。这违反了 PUT 的原则。作为一个 API 开发人员，你有责任创建好一个有效的 PUT 请求。
 
 举一个简单的例子，假如有一个博客系统提供一个Web API，模式是这样http://superblogging/blogs/post/{blog-name}，很简单，将{blog-name}替换为我们的blog名字，往这个URI发送一个HTTP PUT或者POST请求，HTTP的body部分就是博文，这是一个很简单的REST API例子。我们应该用PUT方法还是POST方法？取决于这个REST服务的行为是否是idempotent的，假如我们发送两个http://superblogging/blogs/post/Sample请求，服务器端是什么样的行为？如果产生了两个博客帖子，那就说明这个服务不是idempotent的，因为多次使用产生了副作用了嘛；如果后一个请求把第一个请求覆盖掉了，那这个服务就是idempotent的。前一种情况，应该使用POST方法，后一种情况，应该使用PUT方法。
+
 # 关于post请求产生的preflight request小记
+
 [原文链接](https://juejin.cn/post/6844904164124786701)
+
 ## 问题背景
 
 本地启动的前端vue项目使用axios发送post请求去获取一个展示列表，对于可能会产生的跨域请求后端项目中已经配置了如下
+
 ```
 response.setHeader("Access-Control-Allow-Origin",request.getHeader("Origin"));
 response.setHeader("Access-Control-Allow-Methods", "*");
 response.setHeader("Access-Control-Allow-Credentials", "true");
 response.setHeader("Access-Control-Allow-Headers", "Authorization,Origin, X-Requested-With, Content-Type, Accept,Access-Token");
 ```
+
 前端请求为
+
 ```
 axios.post(myUrl, {
     token: myToken,
@@ -832,6 +894,7 @@ axios.post(myUrl, {
     // do sth error
 })
 ```
+
 然后浏览器控制台显示为
 origin xxxx has been blocked by CORS policy Response to preflight request doesnt pass access control check Redirect is not allowed for a preflight request
 
@@ -846,6 +909,7 @@ preflight request是为确保服务器是否允许发起对服务器数据产生
 ## 尝试解决
 
 ### 方法一
+
 在发送axios发送post请求时，配置header属性 + axios的data字段
 
 注意：这个配置application/x-www-form-urlencoded后，浏览器不会报错preflight request，但后端可能会获取不到数据，因为虽然格式是application/x-www-form-urlencoded，但发送的参数还是JSON字符串
@@ -854,9 +918,10 @@ preflight request是为确保服务器是否允许发起对服务器数据产生
 
 近期在利用axios向后台传数据时，axios默认传的是用application/json格式，若后台需要的数据格式为key/value格式，可以在axios的config中进行配置，也可以用qs.stringify()方法进行转换。
 
-注：若用原生的<form>标签对后台进行post传输数据，默认即为key/value格式
+注：若用原生的`<form>`标签对后台进行post传输数据，默认即为key/value格式
 
 方法一：在vue中axios的配置
+
 ```
 this.$axios({
   method: 'post',
@@ -879,7 +944,9 @@ this.$axios({
   data: dataObj,
 })
 ```
+
 方法二：利用qs.stringify()进行转换
+
 ```
 import qs from 'qs' // qs在安装axios后会自动安装，只需要组件里import一下即可
 
@@ -915,7 +982,9 @@ this.$axios.post('https://jsonplaceholder.typicode.com/posts', params: params).t
 ```
 
 ### 方法二
+
 使用FormData参数格式 + axios的data字段
+
 ```
 let formData = new FormData();
 formData.append('token', myToken);
@@ -925,9 +994,11 @@ axios({
     data: formData,
 })
 ```
+
 使用formData发送请求时，axios不会预先发送option请求，直接只有一个post请求
 
 ### 方法三
+
 直接使用axios的params字段
 axios({
     method: 'post',
@@ -941,6 +1012,7 @@ axios({
 补充：如果axios用post请求且直接使用data字段，浏览器会报preflight request错误，而且浏览器会先发送一个option请求
 
 # url编码的三种方式和区别
+
 [原文链接](https://www.ruanyifeng.com/blog/2010/02/url_encoding.html)
 
 为什么要编码 --- 网络标准RFC 1738做了硬性规定：
@@ -950,15 +1022,17 @@ axios({
 不同的操作系统、不同的浏览器、不同的网页字符集，将导致完全不同的编码结果。如果程序员要把每一种结果都考虑进去，是不是太恐怖了？有没有办法，能够保证客户端只用一种编码方法向服务器发出请求。回答是有的，就是使用Javascript先对URL编码，然后再向服务器提交，不要给浏览器插手的机会。因为Javascript的输出总是一致的，所以就保证了服务器得到的数据是格式统一的。
 
 一旦被Javascript编码（以下三种编码方式），就都变为unicode字符。也就是说，Javascipt函数的输入和输出，默认都是Unicode字符
+
 ## escape()
+
 实际上，escape()不能直接用于URL编码，它的真正作用是返回一个字符的Unicode编码值。比如"春节"的返回结果是%u6625%u8282，也就是说在Unicode字符集中，"春"是第6625个（十六进制）字符，"节"是第8282个（十六进制）字符。
 
 它的具体规则是，除了ASCII字母、数字、标点符号"@ * _ + - . /"以外，对其他所有字符进行编码。在\u0000到\u00ff之间的符号被转成%xx的形式，其余符号被转成%uxxxx的形式。对应的解码函数是unescape()。
 
 所以，"Hello World"的escape()编码就是"Hello%20World"。因为空格的Unicode值是20（十六进制）。
 
-
 ## encodeURI()
+
 encodeURI()是Javascript中真正用来对URL编码的函数。
 
 它着眼于对整个URL进行编码，因此除了常见的符号以外，对其他一些在网址中有特殊含义的符号"; / ? : @ & = + $ , #"，也不进行编码。编码后，它输出符号的utf-8形式，并且在每个字节前加上%。
@@ -966,6 +1040,7 @@ encodeURI()是Javascript中真正用来对URL编码的函数。
 需要注意的是，它不对单引号'编码。
 
 ## encodeURIComponent()
+
 最后一个Javascript编码函数是encodeURIComponent()。与encodeURI()的区别是，它用于对URL的组成部分进行个别编码，而不用于对整个URL进行编码。
 
 因此，"; / ? : @ & = + $ , #"，这些在encodeURI()中不被编码的符号，在encodeURIComponent()中统统会被编码。至于具体的编码方法，两者是一样。
@@ -982,6 +1057,7 @@ TCP效率要求相对低，但对准确性要求相对高的场景。如常见�
 UDP效率要求相对高，对准确性要求相对低的场景。如在线视频、网络语音电话等
 
 # WebSocket
+
 WebSocket是HTML5提供的一种浏览器与服务器进行全双工通讯的网络技术，属于应用层协议，WebSocket没有跨域的限制
 相比于接口轮训，需要不断的建立 http 连接，严重浪费了服务器端和客户端的资源
 WebSocket基于TCP传输协议，并复用HTTP的握手通道。浏览器和服务器只需要建立一次http连接，两者之间就直接可以创建持久性的连接，并进行双向数据传输。
@@ -991,13 +1067,17 @@ websocket 不稳定，要建立心跳检测机制，如果断开，自动连接
 # TCP的三次握手和四次挥手
 
 ## 三次握手的过程：
+
 1）第一次握手：客户端向服务端发送连接请求报文，请求发送后，客户端便进入 SYN-SENT 状态
 2）第二次握手：服务端收到连接请求报文段后，如果同意连接，则会发送一个应答，发送完成后便进入 SYN-RECEIVED 状态
 3）第三次握手：当客户端收到连接同意的应答后，还要向服务端发送一个确认报文。客户端发完这个报文段后便进入 ESTABLISHED(已建立的) 状态，服务端收到这个应答后也进入 ESTABLISHED 状态，此时连接建立成功
+
 ## 为什么需要三次握手？
+
 三次握手之所以是三次，是保证client和server均让对方知道自己的接收和发送能力没问题而保证的最小次数。两次不安全，四次浪费资源
 
 ## 四次挥手的过程
+
 当服务端收到客户端关闭报文时，并不会立即关闭，先回复一个报文，告诉客户端，"你发的FIN报文我收到了"。只有等到我Server端所有的报文都发送完了，我才能发送连接释放请求，因此不能一起发送。故需要四步挥手
 举例：
 Browser:先告诉服务器 “我数据都发完了，你可以关闭连接了。”
@@ -1005,14 +1085,19 @@ Server:回复浏览器 “关闭的请求我收到了，我先看看我这边还
 Server:确认过以后，再次回复浏览器 “我这边数据传输完成了，你可以关闭连接了。”
 Browser:告诉服务器 “好的，那我关闭了。不用回复了。”
 客户端又等了2MSL，确认确实没有再收到请求了，才会真的关闭TCP连接。
+
 ## 为什么需要四次挥手？
 
 1）TCP 使用四次挥手的原因，是因为 TCP 的连接是全双工的，所以需要双方分别释放掉对方的连接
 2）单独一方的连接释放，只代 表不能再向对方发送数据，连接处于的是半释放的状态
 3）最后一次挥手中，客户端会等待一段时间再关闭的原因，是为了防止客户端发送给服务器的确认报文段丢失或者出错，从而导致服务器端不能正常关闭
+
 ## 什么是2MSL？
+
 MSL是Maximum Segment Lifetime英文的缩写，中文可以译为“报文最大生存时间”
+
 ## 四次挥手后，为什么客户端最后还要等待2MSL？
+
 1）保证客户端发送的最后一个ACK报文能够到达服务器，因为这个ACK报文可能丢失，如果服务端没有收到，服务端会重发一次，而客户端就能在这个2MSL时间段内收到这个重传的报文，接着给出回应报文，并且会重启2MSL计时器
 2）防止“已经失效的连接请求报文段”出现在本连接中
 客户端发送完最后一个确认报文后，在这个2MSL时间中，就可以使本连接持续的所产生的所有报文都从网络中消失。这样新的连接中不会出现旧连接的请求报文
