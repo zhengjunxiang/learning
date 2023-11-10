@@ -3,7 +3,7 @@
 const promises = [
     Promise.reject('ERROR A'),
     Promise.reject('ERROR B'),
-    Promise.reject('result'),
+    Promise.resolve('result'),
   ]
   Promise.any(promises).then((value) => {
     console.log('value: ', value)

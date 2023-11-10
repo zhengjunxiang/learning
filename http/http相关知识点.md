@@ -87,14 +87,14 @@ server {
 
 现在可以启动容器了。
 
-$ docker container run 
-  --rm 
-  --name mynginx 
-  --volume "$PWD/html":/usr/share/nginx/html 
-  --volume "$PWD/conf":/etc/nginx 
-  -p 127.0.0.2:8080:80 
-  -p 127.0.0.2:8081:443 
-  -d 
+$ docker container run
+  --rm
+  --name mynginx
+  --volume "$PWD/html":/usr/share/nginx/html
+  --volume "$PWD/conf":/etc/nginx
+  -p 127.0.0.2:8080:80
+  -p 127.0.0.2:8081:443
+  -d
   nginx
 打开浏览器，访问 https://127.0.0.2:8081 。浏览器会提示证书不安全，不去管它，继续访问，就能看到网页了。
 
@@ -481,13 +481,13 @@ None 无论是否跨站都会发送 Cookie
 same-site:lax的具体规则如下：
 
 类型例子                                     是否发送
-a链接`<a href="..."></a>`                       发送
-预加载`<link rel="prerender" href="..."/>`      发送
-GET 表单`<form method="GET" action="...">`      发送
-POST 表单`<form method="POST" action="...">`   不发送
-iframe`<iframe src="..."></iframe>`           不发送
+a链接 `<a href="..."></a>`                       发送
+预加载 `<link rel="prerender" href="..."/>`      发送
+GET 表单 `<form method="GET" action="...">`      发送
+POST 表单 `<form method="POST" action="...">`   不发送
+iframe `<iframe src="..."></iframe>`           不发送
 AJAX axios.post                             不发送
-图片`<img src="..."></image>`                  不发送
+图片 `<img src="..."></image>`                  不发送
 
 而在这之前是会全部发送的。
 
@@ -716,7 +716,7 @@ HTTP Cache也被叫做Disk Cache。
 
 HTTP Cache有一个基于缓存的组件，用来匹配请求的资源是否命中它已有的缓存资源，如果有发现命中的资源，它需要从硬盘里取获取这个资源，这是一个昂贵的操作。
 
-我们之前提到HTTP Cache是遵循HTTP语义的，这几乎是完全正常的，只有一个例外的情况：当一个资源是为了下个导航被预抓取回来的（通过`<link rel=prefetch>` 或者浏览器的其他内部逻辑）,即使它是不可储存的，它也将会被保留到下个导航。所以当这些预抓取资源到达HTTP Cache时，它将被保留大约5分钟，并且期间不会被重新验证。
+我们之前提到HTTP Cache是遵循HTTP语义的，这几乎是完全正常的，只有一个例外的情况：当一个资源是为了下个导航被预抓取回来的（通过 `<link rel=prefetch>` 或者浏览器的其他内部逻辑）,即使它是不可储存的，它也将会被保留到下个导航。所以当这些预抓取资源到达HTTP Cache时，它将被保留大约5分钟，并且期间不会被重新验证。
 
 disk cache 也叫 HTTP cache，顾名思义是存储在硬盘上的缓存，因此它是持久存储的，是实际存在于文件系统中的。而且它允许相同的资源在跨会话，甚至跨站点的情况下使用，例如两个站点都使用了同一张图片。
 
@@ -918,7 +918,7 @@ preflight request是为确保服务器是否允许发起对服务器数据产生
 
 近期在利用axios向后台传数据时，axios默认传的是用application/json格式，若后台需要的数据格式为key/value格式，可以在axios的config中进行配置，也可以用qs.stringify()方法进行转换。
 
-注：若用原生的`<form>`标签对后台进行post传输数据，默认即为key/value格式
+注：若用原生的 `<form>`标签对后台进行post传输数据，默认即为key/value格式
 
 方法一：在vue中axios的配置
 
