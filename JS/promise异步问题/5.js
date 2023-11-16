@@ -8,13 +8,11 @@ const p1 = new Promise((resolve, reject) => { // p1 是 then1 执行返回的新
       resolve()
     }).then(() => { // 异步：微任务 then2
       console.log(4)
-      
       // 拿着 p2 重新 then
       p2.then(() => { // 异步：微任务 then3
         console.log(5)
       })
     })
-    
     // 拿着 p1 重新 then
     p1.then(() => { // 异步：微任务 then4
       console.log(6)

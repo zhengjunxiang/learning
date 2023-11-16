@@ -1,5 +1,5 @@
 
-// 所用正确才返回
+// 所有正确才返回
 const promises = [
     Promise.resolve('ERROR A'),
     Promise.resolve('ERROR B'),

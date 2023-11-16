@@ -1,9 +1,10 @@
 
 // 不管是否对错，都返回
+// resolve
 const promises = [
     Promise.reject('ERROR A'),
     Promise.reject('ERROR B'),
-    Promise.resolve('result'),
+    Promise.reject('result'),
   ]
   Promise.allSettled(promises).then((value) => {
     console.log('value: ', value)

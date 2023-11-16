@@ -1,5 +1,5 @@
 Promise.resolve().then(()=>{
-    console.log('Promise1')  
+    console.log('Promise1')
     setTimeout(()=>{
         console.log('setTimeout2')
     },0)
@@ -7,7 +7,7 @@ Promise.resolve().then(()=>{
 setTimeout(()=>{
     console.log('setTimeout1')
     Promise.resolve().then(()=>{
-        console.log('Promise2')    
+        console.log('Promise2')
     })
 },0)
 
