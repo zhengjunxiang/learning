@@ -1,6 +1,3 @@
 [submodule "react/react-use-analysis"]
 	path = react/react-use-analysis
 	url = ./
-[submodule "next/My-Portflio"]
-	path = next/My-Portflio
-	url = ./
