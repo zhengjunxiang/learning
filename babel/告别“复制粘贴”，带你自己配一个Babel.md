@@ -34,8 +34,7 @@
 
 我们看看 `core-js`这个包里面的主要一些模块：
 
-![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoBBNDUJAeCoXBbYibSocZBQB6F2QgtQ6wOFhnuYYSaoESnDanTWwPxUg/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
-pic_5.png
+![1701936880356](image/告别“复制粘贴”，带你自己配一个Babel/1701936880356.png)
 
 * `es`：里面只包含有稳定的 `ES`功能。
 * `proposals`：里面包含所有 `stage`阶段的 `API`
@@ -142,11 +141,15 @@ module.exports = {plugins, presets};
 复制代码
 ```
 
-在**没设置 `modules`配置项**时，编译后的文件是：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoMCibiaCwMicN32Ouv9dvJibeCn25POdiawMdXOEIJV89vQgzVtS1lYLiadVg/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
+在**没设置 `modules`配置项**时，编译后的文件是：
+
+![1701937581255](image/告别“复制粘贴”，带你自己配一个Babel/1701937581255.png)
 
 我们会发现辅助函数都是以 `require`的方式引入的；
 
-在**设置了 `modules`配置项**后，编译后的文件是：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoewXicfB2Z3FXQ5k1CjRfrl4MpWsum9aNLKAjNNe3PkpowriaWYUkmSSw/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
+在**设置了 `modules`配置项**后，编译后的文件是：
+
+![1701937602109](image/告别“复制粘贴”，带你自己配一个Babel/1701937602109.png)
 
 我们会发现辅助函数变成了我们熟悉的 `ES6`模块方式 `import`引入。
 
@@ -197,14 +200,15 @@ module.exports = {plugins, presets};
 
 如果我们没有设置这个配置项时，`Babel`会假设我们要兼容的目标环境是最旧的浏览器，所以会将所有的 `ES6+`语法代码转化为 `ES5`。**所以我们配置 `Babel`的时候，要设置 `targets`以减少输出代码大小。**
 
-针对这点，我们用这个案例 preset-env-targets-config^[9]^ 来感受一下：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfow6egFS99Ybcx7IMaxS0hwEIQ6LBticUxHKgJzciahOR26DG2sFWeGKVw/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
+针对这点，我们用这个案例 preset-env-targets-config^[9]^ 来感受一下：
+
+![1701937790282](image/告别“复制粘贴”，带你自己配一个Babel/1701937790282.png)
 
 我们会发现 `ES6+`的写法全部被转成了 `ES5`，还加入了一些辅助函数（白色框）。
 
 ok，我们设置 `targets: 'chrome 80'`。这表示，我们的代码是要在 `chrome 80`上运行的，再看看打包后的结果：
 
-![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfo8IHS2iah2FsY9l5wvxH0ETraEnKCmrcEAXC17aW3a9JPjb1IdG52viag/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
-pic_4.png
+![1701937882560](image/告别“复制粘贴”，带你自己配一个Babel/1701937882560.png)
 
 我们会发现编译出来的代码，跟我们入口文件写的代码基本没差。因为 `chrome 80`已经实现了入口文件代码的写法了。所以，**如果我们的代码不需要在一些比较低端的浏览器跑的话，设置 `targets`就十分有必要。**
 
@@ -280,8 +284,12 @@ pic_4.png
 
 **我们把配置设置为：`useBuiltIns: 'entry'`**
 
-* 我们先来看看这个配置在 `IE 11`的表现形式，我们设置 `targets: 'ie 11'`：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfo2Hbibtmicu5LNGr6cYhySS6ZZuFum69FAOTCMucI3TMj1TrRo4HNrlkA/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
-* 我们再把 `targets`设置成 `chrome: 80`看看表现：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfozMrcJKYWlhsjsSfFy9CzoMjmBdJ5Px6jeWJMcXDuSGSngNcEDb27Kw/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
+* 我们先来看看这个配置在 `IE 11`的表现形式，我们设置 `targets: 'ie 11'`：
+
+  ![1701938379457](image/告别“复制粘贴”，带你自己配一个Babel/1701938379457.png)
+* 我们再把 `targets`设置成 `chrome: 80`看看表现：
+
+  ![1701938401354](image/告别“复制粘贴”，带你自己配一个Babel/1701938401354.png)
 
 #### 分析
 
@@ -317,8 +325,12 @@ pic_4.png
 
 **我们把配置设置为：`useBuiltIns: 'usage'`**
 
-* 我们先来看看这个配置在 `IE 11`的表现形式，我们设置 `targets: 'ie 11'`：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoZTHyPJDGGNmAVuEySRkjGzrxcK7jlXoYQDnHcXjCUlGMAXVVsoVTGQ/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
-* 我们再把 `targets`设置成 `chrome: 80`看看表现：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoNuMb3PDQ1Cahty1Qu3hic0t6lceXDBpdJDvMiackhcS3rGtkzsm8vzMA/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
+* 我们先来看看这个配置在 `IE 11`的表现形式，我们设置 `targets: 'ie 11'`：
+
+  ![1701938527627](image/告别“复制粘贴”，带你自己配一个Babel/1701938527627.png)
+* 我们再把 `targets`设置成 `chrome: 80`看看表现：
+
+  ![1701938545528](image/告别“复制粘贴”，带你自己配一个Babel/1701938545528.png)
 
 #### 分析
 
@@ -349,8 +361,12 @@ pic_4.png
 
 **我们把配置设置为：`useBuiltIns: false`**
 
-* 我们先来看看这个配置在 `IE 11`的表现形式，我们设置 `targets: 'ie 11'`：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfogicicktTBEEJRUsdVmSziaowNH79Vsjb6icibJX0eHd30BjxeDDT10JX0yA/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
-* 我们再把 `targets`设置成 `chrome: 80`看看表现：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoibsrhw4pibnIxOYlJj3pc6PVSxTR2Hxt0wpac9LtT7OaMRKh6SQ6UqJA/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
+* 我们先来看看这个配置在 `IE 11`的表现形式，我们设置 `targets: 'ie 11'`：
+
+  ![1701938687969](image/告别“复制粘贴”，带你自己配一个Babel/1701938687969.png)
+* 我们再把 `targets`设置成 `chrome: 80`看看表现：
+
+  ![1701938704789](image/告别“复制粘贴”，带你自己配一个Babel/1701938704789.png)
 
 #### 总结
 
@@ -369,8 +385,7 @@ pic_4.png
 
 我们都知道 `IE 11`基本是不支持 `ES6+`的，我们抽几个常用的 `ES6+` `API`看看：
 
-![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoCqENHibJ4n5VzORbr3CN9LVhsFhvCNAASA3XP1TsoGaUk37BhfYGnrg/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
-pic_12.png
+![1701938751386](image/告别“复制粘贴”，带你自己配一个Babel/1701938751386.png)
 
 那我们就用 `IE 11`作为我们的 `targets`（目标环境），研究一下如何配置 `Babel`，使我们写的 `ES6+`代码能在 `IE 11`中跑起来。我们用这个案例 preset-env-template-config^[16]^
 
@@ -431,8 +446,7 @@ console.log(Array.of(1, 2, 3));
 
   此时 `IE 11`正常输出：
 
-  ![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoABLiaRBnye5BqYEqEnvn6GgG5GpIQKr5a4yh0uhJl26VrwCnGN4T6Dw/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
-  pic_13.png
+  ![1701938884588](image/告别“复制粘贴”，带你自己配一个Babel/1701938884588.png)
 
   红色框是我们源码中**没用到的** `ES6+` `API`，也都被垫平了；此时包的大小有 `115K`
 * 如果我们想减少包的体积，只垫平我们用到的 `ES6+` `API`，那我们的配置应该是：
@@ -457,8 +471,7 @@ console.log(Array.of(1, 2, 3));
 
   此时 `IE 11`正常输出：
 
-  ![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoZjaytISKHqWdSD4T5fZzOyl7bHzqMHdpaDn3ib5mgmyb9x1nAD6ASKQ/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
-  pic_14.png
+  ![1701938942581](image/告别“复制粘贴”，带你自己配一个Babel/1701938942581.png)
 
   但是我们会发现，红色框是我们源码中没用到的 `ES6+` `API`，它并没有被垫平的，它只会垫平我们代码中用到的 `API`；此时包的大小只有 `29K`
 
@@ -485,8 +498,7 @@ console.log(Array.of(1, 2, 3));
 
 我们在 `IE 11`跑一下看看：
 
-![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfobicP4dco4PibNRG9MmSKJg5UORJ7dEpsMKprtwMCuS3UQSA7F4Tj9iaWA/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
-pic_15.png
+![1701939122670](image/告别“复制粘贴”，带你自己配一个Babel/1701939122670.png)
 
 通过 `Babel`编译后的文件，我们会发现：
 
@@ -495,8 +507,7 @@ pic_15.png
 
 我们在高级一点的浏览器（`chrome 108`）看看：
 
-![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoXjcR1yMJUtsCg2ribSS8XInZeyslJ0BpycKK0OYk0AovkpfZ7UFwQdg/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
-pic_16.png
+![1701939145208](image/告别“复制粘贴”，带你自己配一个Babel/1701939145208.png)
 
 在 `chrome 108`运行没有任何问题，因为 `chrome 108`已经内部实现了 `Promise`。
 
@@ -558,11 +569,13 @@ module.exports = {plugins};
 * 我们的源码里面使用了 `async function() {}`等异步函数，或者 `fuction* myGenerator() {}`这种 `Generator`函数的话，就会需要用到 `regenerator-runtime`这个包来编译。
 * `Babel >= 7.18.0`，`regenerator-runtime`包里的内容，会以 **局部变量的方式内联注入到我们的代码中** ，这样我们就不需要全局提供一个 `regeneratorRuntime`对象。
 
-例如我们使用了 `class`语法糖跟 `async function() {}`，然后用 `@babel/runtime`跟 `@babel/plugin-transform-runtime`（默认情况下，`helpers`与 `regenerator`值为 `true`）配合使用，编译后如下图：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoibS0OOfHfFMU2w8eXzAIbkRfkyrpuNB5adJWHY2JuTLfcaG9hzjibNSA/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
+例如我们使用了 `class`语法糖跟 `async function() {}`，然后用 `@babel/runtime`跟 `@babel/plugin-transform-runtime`（默认情况下，`helpers`与 `regenerator`值为 `true`）配合使用，编译后如下图：![1701939424023](image/告别“复制粘贴”，带你自己配一个Babel/1701939424023.png)
 
 ---
 
-当我们把 `helpers`跟 `regenerator`的值设为 `false`：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoiasDicWJspNzMANwNk28DibE8KTJ8zS7OHy0Od2ZtaibwuhF3MJkuVnY6Q/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
+当我们把 `helpers`跟 `regenerator`的值设为 `false`：
+
+![1701939450580](image/告别“复制粘贴”，带你自己配一个Babel/1701939450580.png)
 
 我们会发现我们的辅助函数，跟 `regenerator-runtime`这个包又变回了内联方式。所以：
 
@@ -601,10 +614,14 @@ module.exports = {plugins};
 
 我们用这个例子 transform-runtime-config^[22]^ 体验一下。
 
-* 如果配置的是 `corejs: 2`的话，会怎么样：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfo1PCfK4Ne0n8hzFE9T02ldcRV9mTOX7RYpT4jlicib3x3P4jmQHZELvCg/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
+* 如果配置的是 `corejs: 2`的话，会怎么样：
+
+  ![1701939675403](image/告别“复制粘贴”，带你自己配一个Babel/1701939675403.png)
 
   我们会发现，实例方法 `includes`没被垫平，提案 `API`（`Math.signbit`）也没有被垫平；`Promise`是以局部变量的方式出现在我们的代码中。
-* 我们再看看配置的是 `corejs: {version: 3, proposals: true}`：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoV7zmVic3xpOZ4kSpu4dnxJIY47sNLAsEtdicJliaQ5uF7AVMYddSF0VMQ/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
+* 我们再看看配置的是 `corejs: {version: 3, proposals: true}`：
+
+  ![1701939691491](image/告别“复制粘贴”，带你自己配一个Babel/1701939691491.png)
 
 我们会发现，实例方法 `includes`被垫平，提案 `API`（`Math.signbit`）也垫平；但它们都以**局部变量**的方式注入。
 
@@ -638,7 +655,9 @@ module.exports = {
 复制代码
 ```
 
-输出：![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfoFRNs2KmDPaYxwibYhv3gK86GdOhCrYpgmV7XmMGvhWI0LXZXIQhFJfw/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
+输出：
+
+![1701939814932](image/告别“复制粘贴”，带你自己配一个Babel/1701939814932.png)
 
 我们会发现，`Promise`跟 `includes`都没有被垫平，因为 `chrome 80`已经支持了
 
@@ -660,8 +679,7 @@ module.exports = {
 
   但是经过测试发现，有些提案阶段的 `API`，用这个方法似乎是不能按预期实现的，所以又提了个 issues^[28]^ ，有个 `Babel`之一的大佬说可以用 `babel-plugin-polyfill-corejs3`来实现：
 
-  ![Image](https://mmbiz.qpic.cn/mmbiz/pfCCZhlbMQSVZE5VFWzmDdjzYuicyeyfof60KlXa1570KibfYMYnQbEbUGLjvhmeuSOJv3ibTuPDc2KrVG7e6kp3w/640?wx_fmt=other&wxfrom=5&wx_lazy=1&wx_co=1)
-  pic_23.png
+  ![1701939937922](image/告别“复制粘贴”，带你自己配一个Babel/1701939937922.png)
 
   关于 `babel-plugin-polyfill-corejs3`这块，其实 `Babel`还有一种垫平配置方式，是使用 babel-polyfills^[29]^ 这个包来实现的，这块后期再看看要不要出文章聊聊。
 
