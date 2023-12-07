@@ -774,7 +774,7 @@ module.exports = {
   复制代码
   ```
 
-文章涉及到的例子，已经上传 Github ^[30]^ ，觉得有帮助的话，欢迎 `Star`或者 `Fork`学习。
+文章涉及到的例子，已经上传 [Github](https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2Flimingcan562%2Flearn-babel-7 "https://github.com/limingcan562/learn-babel-7")，觉得有帮助的话，欢迎 `Star`或者 `Fork`学习。
 
 如果读完这篇文章的你，觉得真的有帮助到， **欢迎点赞收藏** ；如果有异同点， **欢迎在评论区讨论** 。
 
