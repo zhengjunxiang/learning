@@ -1,6 +1,3 @@
 [submodule "react/react-use-analysis"]
 	path = react/react-use-analysis
 	url = ./
-[submodule "projects/web-see-demo"]
-	path = projects/web-see-demo
-	url = https://github.com/xy-sea/web-see-demo.git
