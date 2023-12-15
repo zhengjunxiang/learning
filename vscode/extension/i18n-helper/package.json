@@ -9,15 +9,65 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "i18n-helper",
+      "properties": {
+        "i18n-helper.showTip": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否在每次启动时显示欢迎提示！"
+        }
+      }
+    },
     "commands": [
       {
         "command": "i18n-helper.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "i18n-helper.searchChinese",
+        "title": "Search Chinese Text"
       }
-    ]
+    ],
+    "keybindings": [
+      {
+        "command": "i18n-helper.helloWorld",
+        "key": "ctrl+f10",
+        "mac": "cmd+f10",
+        "when": "editorTextFocus"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorFocus",
+          "command": "i18n-helper.helloWorld",
+          "group": "navigation"
+        }
+      ]
+    },
+    "viewsContainers": {
+        "activitybar": [
+            {
+                "id": "i18n",
+                "title": "i18n",
+                "icon": "i18n.svg"
+            }
+        ]
+    },
+    "views": {
+        "yourExtensionViewContainer": [
+            {
+                "id": "i18n",
+                "name": "i18n"
+            }
+        ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
