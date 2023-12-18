@@ -30,8 +30,8 @@
         "title": "Hello World"
       },
       {
-        "command": "i18n-helper.searchChinese",
-        "title": "Search Chinese Text"
+        "command": "i18n-helper.findChinese",
+        "title": "Search Chinese Characters"
       }
     ],
     "keybindings": [
@@ -51,22 +51,13 @@
         }
       ]
     },
-    "viewsContainers": {
-        "activitybar": [
-            {
-                "id": "i18n",
-                "title": "i18n",
-                "icon": "i18n.svg"
-            }
-        ]
-    },
     "views": {
-        "yourExtensionViewContainer": [
-            {
-                "id": "i18n",
-                "name": "i18n"
-            }
-        ]
+      "explorer": [
+        {
+          "id": "chineseSearch",
+          "name": "Chinese Search Results"
+        }
+      ]
     }
   },
   "scripts": {

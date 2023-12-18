@@ -1,11 +1,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import { exec } from 'child_process';
-import * as fs from 'fs';
 import * as os from 'os';
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { TextDocument, EventEmitter } from "vscode";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -13,7 +11,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "i18n-helper" is now active!');
+	console.log('Congratulations, your extension "i18n-helper" is now active!11');
 
 	// 提示弹窗
 	const key = 'i18n-helper.showTip';
@@ -49,95 +47,126 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(disposable1);
 
-  let disposable = vscode.commands.registerCommand('i18n-helper.searchChinese', () => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            vscode.window.showInformationMessage('No editor is active');
-            return;
-        }
+  let chineseTreeViewProvider = new ChineseTreeViewProvider();
+  vscode.window.registerTreeDataProvider('chineseSearch', chineseTreeViewProvider);
 
-        const projectRootPath = vscode.workspace.rootPath;
-        if (!projectRootPath) {
-            vscode.window.showInformationMessage('No project is open');
-            return;
-        }
+  context.subscriptions.push(
+    vscode.commands.registerCommand('chineseSearch.search', () => {
+      chineseTreeViewProvider = new ChineseTreeViewProvider();
+      vscode.window.registerTreeDataProvider('chineseSearch', chineseTreeViewProvider);
+      vscode.commands.executeCommand('workbench.view.explorer');
+    })
+  );
 
-        vscode.workspace.findFiles('**/*', '').then((files) => {
-            const chineseRegex = /[\u4e00-\u9fa5]+/g;
-            let chineseTexts: { [key: string]: string[] } = {};
-
-            files.forEach(file => {
-                const filePath = file.fsPath;
-                const fileContent = fs.readFileSync(filePath, 'utf8');
-                const matches = fileContent.match(chineseRegex);
-                if (matches) {
-                    chineseTexts[filePath] = matches;
-                }
-            });
-
-            // Call function to update the sidebar view
-            updateSidebar(chineseTexts);
-        });
-    });
-
-    context.subscriptions.push(disposable);
-
+  context.subscriptions.push(
+    vscode.commands.registerCommand('chineseSearch.openFile', (filePath: string) => {
+      vscode.workspace.openTextDocument(filePath).then(doc => {
+        vscode.window.showTextDocument(doc);
+      });
+    })
+  );
 }
 
-class ChineseTextProvider implements vscode.TreeDataProvider<ChineseTextItem> {
-    private _onDidChangeTreeData: vscode.EventEmitter<ChineseTextItem | undefined> = new vscode.EventEmitter<ChineseTextItem | undefined>();
-    readonly onDidChangeTreeData: vscode.Event<ChineseTextItem | undefined> = this._onDidChangeTreeData.event;
-    protected currentFile: string | undefined;
-    private changeEvent = new EventEmitter<void>();
+class ChineseTreeViewProvider implements vscode.TreeDataProvider<ChineseEntry> {
+  private _onDidChangeTreeData: vscode.EventEmitter<ChineseEntry | undefined> = new vscode.EventEmitter<ChineseEntry | undefined>();
+  readonly onDidChangeTreeData: vscode.Event<ChineseEntry | undefined> = this._onDidChangeTreeData.event;
 
-    constructor(private chineseTexts: { [key: string]: string[] }) {
-      console.log('constructor-chineseTexts', chineseTexts)
-    }
+  private chineseEntries: ChineseEntry[] = [];
 
-    public refresh(document?: TextDocument | undefined): void {
-      if (document && document.languageId === "antlr" && document.uri.scheme === "file") {
-          this.currentFile = document.fileName;
-      } else {
-          this.currentFile = undefined;
+  constructor() {
+    this.searchChineseInFiles();
+
+    // 监听文件内容变化
+    vscode.workspace.onDidChangeTextDocument(event => {
+      const filePath = event.document.uri.fsPath;
+      if (this.isSupportedFile(filePath)) {
+        this.searchChineseInFile(filePath);
       }
-      this.changeEvent.fire();
+    });
   }
 
-    getTreeItem(element: ChineseTextItem): vscode.TreeItem {
-        return element;
+  private async searchChineseInFile(filePath: string) {
+    const content = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath));
+    const text = Buffer.from(content).toString('utf-8');
+    if (this.containsChinese(text)) {
+      const chineseTexts = this.extractChinese(text);
+      const existingEntryIndex = this.chineseEntries.findIndex(entry => entry.filePath === filePath);
+      if (existingEntryIndex !== -1) {
+        const updatedEntry = new ChineseEntry(filePath, chineseTexts);
+        this.chineseEntries[existingEntryIndex] = updatedEntry;
+      } else {
+        this.chineseEntries.push(new ChineseEntry(filePath, chineseTexts));
+      }
+      this._onDidChangeTreeData.fire(undefined);
+    }
+  }
+
+  private isSupportedFile(filePath: string): boolean {
+    return /\.(js|ts|jsx|tsx|html|css)$/.test(filePath);
+  }
+
+  private async searchChineseInFiles() {
+    const fileUris = await vscode.workspace.findFiles('**/*.{js,ts,jsx,tsx,html,css}', '**/node_modules/**', 10000);
+    const results: { filePath: string, chineseTexts: string[] }[] = [];
+
+    for (const uri of fileUris) {
+      const content = await vscode.workspace.fs.readFile(uri);
+      const text = Buffer.from(content).toString('utf-8');
+      if (this.containsChinese(text)) {
+        const chineseTexts = this.extractChinese(text);
+        results.push({ filePath: uri.fsPath, chineseTexts });
+      }
     }
 
-    getChildren(element?: ChineseTextItem): Thenable<ChineseTextItem[]> {
-        if (element) {
-            console.log('getChildren-element', element)
-            console.log('getChildren-this.chineseTexts', this.chineseTexts)
-            // Return the Chinese text items for the given file
-            const fileChineseTexts = this.chineseTexts[`${element.label}`];
-            return Promise.resolve(fileChineseTexts.map(text => new ChineseTextItem(text)));
-        } else {
-            // Return the file items
-            const fileItems = Object.keys(this.chineseTexts).map(key => new ChineseTextItem(path.basename(key), vscode.TreeItemCollapsibleState.Collapsed));
-            return Promise.resolve(fileItems);
-        }
+    this.chineseEntries = results.map(result => new ChineseEntry(result.filePath, result.chineseTexts));
+    this._onDidChangeTreeData.fire(undefined);
+  }
+
+  private containsChinese(text: string): boolean {
+    return /[\u4E00-\u9FFF]/.test(text);
+  }
+
+  private extractChinese(text: string): string[] {
+    return text.match(/[\u4E00-\u9FFF]+/g) || [];
+  }
+
+  getTreeItem(element: ChineseEntry): vscode.TreeItem {
+    return {
+      label: element.filePath,
+      collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+      command: {
+        command: 'chineseSearch.openFile',
+        title: 'Open File',
+        arguments: [element.filePath]
+      },
+      iconPath: {
+        light: vscode.Uri.file(this.getIconPath('media/i18n.svg')),
+        dark: vscode.Uri.file(this.getIconPath('media/i18n.svg'))
+      }
+    };
+  }
+
+  getChildren(element?: ChineseEntry): Thenable<ChineseEntry[]> {
+    if (element) {
+      return Promise.resolve(element.children);
     }
+    return Promise.resolve(this.chineseEntries);
+  }
+
+  private getIconPath(iconName: string): string {
+    return path.join(__filename, '..', iconName);
+  }
 }
 
-class ChineseTextItem extends vscode.TreeItem {
-    constructor(label: string, collapsibleState?: vscode.TreeItemCollapsibleState) {
-        super(label, collapsibleState);
-        this.tooltip = `${this.label}`;
-        this.description = `${this.label}`;
-    }
-}
+class ChineseEntry {
+  constructor(
+    public readonly filePath: string,
+    public readonly chineseTexts: string[]
+  ) {}
 
-
-function updateSidebar(chineseTexts: { [key: string]: string[] }) {
-  console.log('updateSidebar-chineseTexts', chineseTexts)
-    // Implement the logic to update the sidebar with the found Chinese texts
-    // This part of the code depends on how you want to display the data in the sidebar
-    const chineseTextProvider = new ChineseTextProvider(chineseTexts);
-    vscode.window.registerTreeDataProvider('i18n', chineseTextProvider);
-    // chineseTextProvider.refresh();
+  get children(): ChineseEntry[] {
+    return this.chineseTexts.map(text => new ChineseEntry(text, []));
+  }
 }
 
 // This method is called when your extension is deactivated
