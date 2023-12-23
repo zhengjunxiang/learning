@@ -4,3 +4,9 @@
 [submodule "性能监控/web-see-demo"]
 	path = 性能监控/web-see-demo
 	url = https://github.com/xy-sea/web-see-demo.git
+[submodule "next/testplatform"]
+	path = next/testplatform
+	url = ./
+[submodule "next/My-Portflio"]
+	path = next/My-Portflio
+	url = ./
