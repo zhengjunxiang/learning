@@ -30,7 +30,7 @@
         "title": "Hello World"
       },
       {
-        "command": "i18n-helper.findChinese",
+        "command": "chineseSearch.search",
         "title": "Search Chinese Characters"
       }
     ],
@@ -51,7 +51,22 @@
         }
       ]
     },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "chineseSearchBar",
+          "title": "Search Chinese",
+          "icon": "public/icons8.svg"
+        }
+      ]
+    },
     "views": {
+      "chineseSearchBar": [
+        {
+          "id": "view1",
+          "name": "Search Chinese"
+        }
+      ],
       "explorer": [
         {
           "id": "chineseSearch",

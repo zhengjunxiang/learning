@@ -140,8 +140,8 @@ class ChineseTreeViewProvider implements vscode.TreeDataProvider<ChineseEntry> {
         arguments: [element.filePath]
       },
       iconPath: {
-        light: vscode.Uri.file(this.getIconPath('media/i18n.svg')),
-        dark: vscode.Uri.file(this.getIconPath('media/i18n.svg'))
+        light: vscode.Uri.file(this.getIconPath('public/icons8.svg')),
+        dark: vscode.Uri.file(this.getIconPath('public/icons8.svg'))
       }
     };
   }
@@ -154,7 +154,7 @@ class ChineseTreeViewProvider implements vscode.TreeDataProvider<ChineseEntry> {
   }
 
   private getIconPath(iconName: string): string {
-    return path.join(__filename, '..', iconName);
+    return path.join(__dirname, '../', iconName);
   }
 }
 
