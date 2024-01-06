@@ -10,3 +10,6 @@
 [submodule "next/My-Portflio"]
 	path = next/My-Portflio
 	url = ./
+[submodule "sdk/TrackerDemo"]
+	path = sdk/TrackerDemo
+	url = ./
