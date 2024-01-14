@@ -32,6 +32,10 @@
       {
         "command": "chineseSearch.search",
         "title": "Search Chinese Characters"
+      },
+      {
+        "command": "chineseSearch.openFile",
+        "title": "openFile"
       }
     ],
     "keybindings": [

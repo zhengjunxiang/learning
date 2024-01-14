@@ -15,7 +15,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// 提示弹窗
 	const key = 'i18n-helper.showTip';
-  const showTip = vscode.workspace.getConfiguration().get(key)
+  const showTip = vscode.workspace.getConfiguration().get(key);
   if (showTip !== false) {
     const result = await vscode.window.showInformationMessage(
       '是否要打开愧怍的小站？',
@@ -47,6 +47,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(disposable1);
 
+  // 搜索中文
   let chineseTreeViewProvider = new ChineseTreeViewProvider();
   vscode.window.registerTreeDataProvider('chineseSearch', chineseTreeViewProvider);
 
@@ -58,6 +59,7 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
+  // 点击打开对应文件
   context.subscriptions.push(
     vscode.commands.registerCommand('chineseSearch.openFile', (filePath: string) => {
       vscode.workspace.openTextDocument(filePath).then(doc => {
