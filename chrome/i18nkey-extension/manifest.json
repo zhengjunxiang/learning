@@ -1,15 +1,25 @@
 {
   "manifest_version": 3,
-  "name": "I18nKeyStyleInjector",
+  "name": "i18nKey 助手",
   "version": "1.0",
-  "description": "Inject styles for i18nKey",
+  "description": "18nKey收集、展示和管理",
   "permissions": ["activeTab", "webNavigation", "storage"],
+  "icons": {
+    "48": "icon.png"
+  },
   "action": {
     "default_icon": "icon.png"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": [
+        "http://*.sankuai.com/*",
+        "http://*.meituan.com/*",
+        "https://*.sankuai.com/*",
+        "https://*.meituan.com/*",
+        "*://localhost:*/*"
+      ],
+      "run_at": "document_end",
       "js": ["content.js"]
     }
   ],

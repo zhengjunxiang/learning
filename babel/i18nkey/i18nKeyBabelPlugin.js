@@ -23,7 +23,7 @@ module.exports = function () {
           // console.log('--- Processing file --- \n', filename)
         },
         // exit (path, state) {
-        //   // 生成代码并打印
+        // 生成代码并打印
         //   const code = generator(path.node)
         //   console.log('--- AssignmentExpression generator code  --- \n', code)
         // },
