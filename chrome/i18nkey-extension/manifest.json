@@ -3,12 +3,13 @@
   "name": "i18nKey 助手",
   "version": "1.0",
   "description": "18nKey收集、展示和管理",
-  "permissions": ["activeTab", "webNavigation", "storage"],
+  "permissions": ["activeTab", "webNavigation", "storage", "scripting"],
   "icons": {
     "48": "icon.png"
   },
   "action": {
-    "default_icon": "icon.png"
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
   },
   "content_scripts": [
     {
@@ -25,5 +26,6 @@
   ],
   "background": {
     "service_worker": "background.js"
-  }
+  },
+  "options_page": "options.html"
 }

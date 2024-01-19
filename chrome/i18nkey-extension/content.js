@@ -12,22 +12,6 @@ const style = `
   cursor: pointer;
   position: fixed;
 }
-/* 匹配包含data-i18nkey属性的元素 */
-[data-i18nkey] {
-  position: relative;
-  display: inline-block;
-}
-[data-i18nkey]::after {
-  content: ""; /* 必须设置，否则::after不会生效 */
-  width: 5px; /* 设置小点的宽度 */
-  height: 5px; /* 设置小点的高度 */
-  background-color: red; /* 设置小点的颜色为红色 */
-  position: absolute; /* 设置定位方式为绝对定位 */
-  top: 50%; /* 设置小点在元素的左上角 */
-  margin-top: -3px;
-  left: 5px; /* 设置小点在元素的左上角 */
-  border-radius: 50%; /* 设置小点为圆形 */
-}
 `
 
 let i18nkeyName = ''
@@ -50,10 +34,27 @@ tooltipElement.innerHTML =
   <span><span>
   `
 
+const copy = function(value) {
+  if (!value) return
+  // 创建一个textarea元素，用于存放需要复制的内容
+  const textarea = document.createElement('textarea');
+  // 设置需要复制的内容
+  textarea.value = value;
+  // 将textarea添加到body中，使其可以被选中
+  document.body.appendChild(textarea);
+  // 选中textarea中的内容
+  textarea.select();
+  // 执行复制命令
+  document.execCommand('copy');
+  // 将textarea从body中移除
+  document.body.removeChild(textarea);
+};
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'insertStyles') {
     document.head.appendChild(styleElement);
     document.body.appendChild(tooltipElement);
+    console.log('window._I18NTEMPTRANSLATIONS', window._I18NTEMPTRANSLATIONS);
 
     document.body.addEventListener('mouseover', (e) => {
       const i18nkey = e.target.getAttribute('data-i18nkey')
@@ -71,21 +72,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // 获取copy图标元素
       const copyIcon = document.getElementById('copyIcon');
       // 给copy图标添加点击事件
-      copyIcon.onclick = function() {
-        if (!i18nkeyName) return
-        // 创建一个textarea元素，用于存放需要复制的内容
-        const textarea = document.createElement('textarea');
-        // 设置需要复制的内容
-        textarea.value = i18nkeyName;
-        // 将textarea添加到body中，使其可以被选中
-        document.body.appendChild(textarea);
-        // 选中textarea中的内容
-        textarea.select();
-        // 执行复制命令
-        document.execCommand('copy');
-        // 将textarea从body中移除
-        document.body.removeChild(textarea);
-      };
+      copyIcon.onclick = () => copy(i18nkeyName)
     });
   }
 })
