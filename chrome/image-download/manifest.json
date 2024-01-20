@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "图片下载助手",
+  "version": "1.0.0",
+  "description": "一个非常高大上的图片下载插件",
+  "icons": {
+    "48": "icon.png",
+    "16": "icon.png"
+  },
+  "permissions": [
+    "downloads",
+    "contextMenus",
+    "storage"
+  ],
+  "action": {
+    "default_icon": "icon.png"
+  },
+  "background":{
+    "service_worker": "src/service_worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*/*"],
+      "js": ["src/main.js"]
+    }
+  ],
+  "options_ui": {
+    "page": "options.html"
+  }
+}

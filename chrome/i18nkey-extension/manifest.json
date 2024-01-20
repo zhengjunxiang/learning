@@ -21,11 +21,10 @@
         "*://localhost:*/*"
       ],
       "run_at": "document_end",
-      "js": ["content.js"]
+      "js": ["src/content.js"]
     }
   ],
   "background": {
-    "service_worker": "background.js"
-  },
-  "options_page": "options.html"
+    "service_worker": "src/background.js"
+  }
 }

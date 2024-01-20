@@ -50,29 +50,44 @@ const copy = function(value) {
   document.body.removeChild(textarea);
 };
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'insertStyles') {
-    document.head.appendChild(styleElement);
-    document.body.appendChild(tooltipElement);
-    console.log('window._I18NTEMPTRANSLATIONS', window._I18NTEMPTRANSLATIONS);
+window.addEventListener('load', async () => {
+  document.head.appendChild(styleElement);
+  document.body.appendChild(tooltipElement);
+  const _I18NTEMPTRANSLATIONS = document.querySelector('#_I18NTEMPTRANSLATIONS').textContent;
 
-    document.body.addEventListener('mouseover', (e) => {
-      const i18nkey = e.target.getAttribute('data-i18nkey')
-      if (!i18nkey) return;
-      i18nkeyName = i18nkey
-      // 获取children下的i18nkey
-      if (tooltipElement.children[1]) {
-        tooltipElement.children[1].textContent = i18nkey
-        tooltipElement.children[1].onclick = () => {
-          window.open(`https://i18n.mykeeta.sankuai.com/#/5/task/detail?taskId=16&key=${i18nkey}`);
+  // 获取有多少个未翻译文案
+  if (_I18NTEMPTRANSLATIONS) {
+    const arrStr = _I18NTEMPTRANSLATIONS.split('=')[1]
+    const unTranslateArray = JSON.parse(arrStr);
+
+    chrome.storage.local.set({
+      unTranslate: unTranslateArray
+    })
+
+    chrome.runtime.onMessage.addListener((event, sender, callable) => {
+        if (event.type === 'popupType') {
+          callable(unTranslateArray)
         }
-      }
-      tooltipElement.setAttribute('style', `display: block; top: ${e.clientY + 5}px; left: ${e.clientX + 10}px`)
-
-      // 获取copy图标元素
-      const copyIcon = document.getElementById('copyIcon');
-      // 给copy图标添加点击事件
-      copyIcon.onclick = () => copy(i18nkeyName)
-    });
+    })
+    await chrome.runtime.sendMessage({ type:'badge', data: unTranslateArray });
   }
+
+  document.body.addEventListener('mouseover', (e) => {
+    const i18nkey = e.target.getAttribute('data-i18nkey')
+    if (!i18nkey) return;
+    i18nkeyName = i18nkey
+    // 获取children下的i18nkey
+    if (tooltipElement.children[1]) {
+      tooltipElement.children[1].textContent = i18nkey
+      tooltipElement.children[1].onclick = () => {
+        window.open(`https://i18n.mykeeta.sankuai.com/#/5/task/detail?taskId=16&key=${i18nkey}`);
+      }
+    }
+    tooltipElement.setAttribute('style', `display: block; top: ${e.clientY + 5}px; left: ${e.clientX + 10}px`)
+
+    // 获取copy图标元素
+    const copyIcon = document.getElementById('copyIcon');
+    // 给copy图标添加点击事件
+    copyIcon.onclick = () => copy(i18nkeyName)
+  });
 })

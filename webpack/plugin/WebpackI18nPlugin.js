@@ -94,7 +94,7 @@ class WebpackI18nPlugin {
       if (htmlAsset) {
         let htmlContent = htmlAsset.source()
 
-        const customScript = `<script>window._I18NTEMPTRANSLATIONS = ${JSON.stringify(
+        const customScript = `<script id="_I18NTEMPTRANSLATIONS">window._I18NTEMPTRANSLATIONS = ${JSON.stringify(
           this.tempTranslation
         )}</script>`
         htmlContent = htmlContent.replace('</head>', `${customScript}</head>`)
