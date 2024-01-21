@@ -1,8 +1,8 @@
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-  if (message.type=='badge') {
-    chrome.action.setBadgeBackgroundColor({color:'#f00'})
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type=='badge' && message.data.length) {
+    chrome.action.setBadgeBackgroundColor({ color:'#f89517' })
     chrome.action.setBadgeText({
-      text: message.data.length+''
+      text: String(message.data.length),
     })
   }
 });
