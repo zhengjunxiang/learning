@@ -14,6 +14,17 @@ function throttle (func, wait = 50) {
     }
 }
 
+function throttle (func, wait) {
+    let last = +new Date()
+    return function (...args) {
+        let now = +new Date();
+        if(now - last > wait) {
+            last = now;
+            func.apply(this, args)
+        }
+    }
+}
+
 // 时间戳的实现方式
 // 当高频事件触发时，给事件绑定函数与真正触发事件的间隔如果大于delay的话第一次应该会立即执行，
 // 而后再怎么频繁触发事件，也都是会每delay秒才执行一次。

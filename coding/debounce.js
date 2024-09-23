@@ -13,6 +13,17 @@ function debounce (func, wait = 50) {
     }
 }
 
+function debouce (func, wait = 50) {
+    let timer = 0
+    return function (...args) {
+        if (timer) clearTimeout(timer)
+        timer = setTimeout(() => {
+            func.apply(this, args)
+            clearTimeout(timer)
+        }, wait)
+    }
+}
+
 function throttle (func, wait = 50) {
     let last = new Date()
     return function (...args) {
