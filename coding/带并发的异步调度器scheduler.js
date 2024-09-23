@@ -75,6 +75,6 @@ myScheduler.add(() => new Promise(resolve => {
   setTimeout(() => {
     resolve('c')
     console.log('c')
-  }, 5000)
+  }, 3000)
 }))
 
